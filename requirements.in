@@ -1,0 +1,8 @@
+ipython
+numpy
+pytest
+pytest-qt
+PyQt5
+tensorflow
+tensorflow-macos
+tensorflow-metal
