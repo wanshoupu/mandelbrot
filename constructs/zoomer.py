@@ -1,6 +1,6 @@
-from fractals.mandelbrot.data import Rect
-from fractals.mandelbrot.history import HistoryHandler
-from fractals.mandelbrot.viz import PlotHandle
+from constructs.data import Rect
+from constructs.history import HistoryHandler
+from constructs.viz import PlotHandle
 
 
 class ZoomHandler:

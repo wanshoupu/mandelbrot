@@ -1,11 +1,10 @@
 import matplotlib.pyplot as plt
-import numpy as np
 
-from fractals.mandelbrot.history import HistoryHandler
-from fractals.mandelbrot.updater import DataRefreshHandler
-from fractals.mandelbrot.data import data_gen, Rect, cache_cleanup
-from fractals.mandelbrot.viz import mandelbrot_viz, PlotHandle
-from fractals.mandelbrot.zoomer import ZoomHandler
+from constructs.history import HistoryHandler
+from constructs.updater import DataRefreshHandler
+from constructs.data import data_gen, Rect, cache_cleanup
+from constructs.viz import mandelbrot_viz, PlotHandle
+from constructs.zoomer import ZoomHandler
 
 
 def interactive_plot():

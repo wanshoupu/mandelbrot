@@ -1,5 +1,5 @@
-from fractals.mandelbrot.data import data_gen, Rect
-from fractals.mandelbrot.viz import PlotHandle, mandelbrot_viz
+from constructs.data import data_gen, Rect
+from constructs.viz import PlotHandle, mandelbrot_viz
 
 
 class DataRefreshHandler:

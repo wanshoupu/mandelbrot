@@ -1,10 +1,10 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-from fractals.mandelbrot.updater import DataRefreshHandler
-from fractals.mandelbrot.data import MandelbrotData
-from fractals.mandelbrot.viz import PlotHandle, mandelbrot_viz
-from fractals.mandelbrot.zoomer import ZoomHandler
+from constructs.updater import DataRefreshHandler
+from constructs.data import MandelbrotData
+from constructs.viz import PlotHandle, mandelbrot_viz
+from constructs.zoomer import ZoomHandler
 import matplotlib
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5.QtCore import Qt

@@ -1,5 +1,5 @@
-from fractals.mandelbrot.data import Rect
-from fractals.mandelbrot.viz import PlotHandle
+from constructs.data import Rect
+from constructs.viz import PlotHandle
 
 
 class HistoryHandler:

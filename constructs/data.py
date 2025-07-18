@@ -5,7 +5,7 @@ from multiprocessing import Pool
 
 import numpy as np
 
-from fractals.mandelbrot.decimal_complex import dcomplex_zeroes, dcomplex_add, dcomplex_sq, dclingrid
+from constructs.decimal_complex import dcomplex_zeroes, dcomplex_add, dcomplex_sq, dclingrid
 
 FILE_PREFIX = 'tmp'
 PIXEL = 1 + 2048

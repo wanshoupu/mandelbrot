@@ -4,7 +4,7 @@ import numpy as np
 from matplotlib import pyplot as plt, image, colorbar
 from matplotlib.colors import LinearSegmentedColormap
 
-from fractals.mandelbrot.data import Rect, MandelbrotData
+from constructs.data import Rect, MandelbrotData
 from matplotlib.widgets import Button
 
 
