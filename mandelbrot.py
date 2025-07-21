@@ -8,7 +8,7 @@ from constructs.zoomer import ZoomHandler
 
 
 def interactive_plot():
-    rect = Rect(-2.0, 1.0, -1.5, 1.5)
+    rect = Rect(-2.2, 1.0, -1, 1)
     # rect = Rect(np.float64(-1.9449859417539945), np.float64(-1.944985936166059), np.float64(-2.94131147638115e-09), np.float64(2.646623971311721e-09))
     # rect = Rect(np.float64(-1.9449859385), np.float64(-1.9449859375), np.float64(-.5e-09), np.float64(.5e-09))
     # rect = Rect(np.float64(-1.9449859379728804), np.float64(-1.9449859379572556), np.float64(-5.681818181817935e-12), np.float64(9.943181818182066e-12))

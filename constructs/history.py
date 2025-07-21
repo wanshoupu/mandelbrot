@@ -7,6 +7,7 @@ class HistoryHandler:
         self.history = [Rect(*handle.ax.get_xlim() + handle.ax.get_ylim())]
         self.index = 0
         self.handle = handle
+        self.init_rect = self.history[0]
 
         self.handle.btn_undo.on_clicked(self.undo)
         self.handle.btn_reset.on_clicked(self.reset)
@@ -14,7 +15,7 @@ class HistoryHandler:
 
     def reset(self, event):
         print(f"Reset event")
-        rect = Rect(-2.0, 1.0, -1.5, 1.5)
+        rect = self.init_rect
         self.history = [rect]
         self.index = 0
 

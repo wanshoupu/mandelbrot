@@ -10,6 +10,16 @@ class ZoomHandler:
         self.cid = self.handle.fig.canvas.mpl_connect('button_press_event', self.on_click)
         self.sid = self.handle.fig.canvas.mpl_connect('scroll_event', self.on_scroll)
         self.history_handle = history_handle
+        self.timer = None
+        self.delay = 200  # milliseconds
+
+    def timer(self, callback):
+        # Restart timer
+        if self.timer is not None:
+            self.timer.stop()
+        self.timer = self.handle.ax.figure.canvas.new_timer(interval=self.delay)
+        self.timer.add_callback(callback)
+        self.timer.start()
 
     def on_click(self, event):
         if event.inaxes != self.handle.ax or event.button != 1:

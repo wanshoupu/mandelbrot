@@ -8,8 +8,7 @@ import numpy as np
 from constructs.decimal_complex import dcomplex_zeroes, dcomplex_add, dcomplex_sq, dclingrid
 
 FILE_PREFIX = 'tmp'
-PIXEL = 1 + 2048
-PIXEL_X, PIXEL_Y = PIXEL, PIXEL
+PIXEL_X, PIXEL_Y = 2560, 1600
 ITER_N = 100
 CPU_CORES = 8
 PARALLELISM = CPU_CORES * 2

@@ -86,6 +86,14 @@ def mandelbrot_viz(mandelData: MandelbrotData, handle: PlotHandle = None) -> Plo
     im.set_extent(ax.get_xlim() + ax.get_ylim())
     fig.canvas.draw_idle()
 
+    # Define the key press event handler
+    def on_key(event):
+        if event.key == 'f':  # press 'f' to toggle fullscreen
+            fig.canvas.manager.full_screen_toggle()
+
+    # Connect the key press event
+    fig.canvas.mpl_connect('key_press_event', on_key)
+
     # Remove the old colorbar
     handle.cbar.remove()
     # Add colorbar
