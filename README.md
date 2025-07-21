@@ -13,7 +13,7 @@ pip install -r requirements.txt
 
 Run the interactive matplot script in a terminal
 ```bash
-
+python -m mandelbrot
 ```
 Install pip-compile with (Optional)
 ```bash
