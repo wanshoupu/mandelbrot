@@ -1,6 +1,4 @@
-import numpy as np
-
-from constructs.data import data_gen, Rect
+from constructs.data import data_gen, Rect, iter_heuristic
 from constructs.viz import PlotHandle, mandelbrot_viz
 
 
@@ -22,7 +20,7 @@ class DataRefreshHandler:
         self.latest_xlim = self.handle.ax.get_xlim()
         self.latest_ylim = self.handle.ax.get_ylim()
         rect = Rect(*self.latest_xlim + self.latest_ylim)
-        self.handle.iterations = self.iter_heuristic(rect)
+        self.handle.iterations = iter_heuristic(rect)
         self.handle.iter_box.set_val(str(self.handle.iterations))
 
         # Restart timer
@@ -33,7 +31,7 @@ class DataRefreshHandler:
         self.timer.start()
 
     def _process_latest_limits(self):
-        print(f"Processing latest limits:\n  Rect({self.latest_xlim + self.latest_ylim}) iterations: {self.handle.iterations}")
+        print(f"Processing latest limits:\n  Rect{self.latest_xlim + self.latest_ylim} iterations: {self.handle.iterations}")
         rect = Rect(*self.latest_xlim + self.latest_ylim)
         new_data = data_gen(rect, self.handle.iterations, regen=self.regen)
         handle = mandelbrot_viz(new_data, self.handle)
@@ -48,10 +46,3 @@ class DataRefreshHandler:
             print(f'Invalid number: {text}')
 
         self._process_latest_limits()
-
-    def iter_heuristic(self, rect):
-        dx = rect.xmax - rect.xmin
-        dy = rect.ymax - rect.ymin
-        ex = int(-np.log(dx * dy))
-        iterations = 1 << max(7, ex)
-        return iterations

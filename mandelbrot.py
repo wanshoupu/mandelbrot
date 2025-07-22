@@ -16,8 +16,10 @@ def interactive_plot():
     # rect = Rect((-1.9449859379303545), (-1.9449859379301093), 1.2128871240657437e-11, 1.2373011865657429e-11)
     # rect = Rect(-1.9449855034094694, -1.9449855034080101, 6.126053995240807e-08, 6.126199514393089e-08)
     # rect = Rect(-1.9449855034748507, -1.94498550337357, 6.12237434943789e-08, 6.132471769024717e-08)
+    # rect = Rect(-1.9449855073419413, -1.9449854963610607, 5.511244475221234e-08, 6.60600890047455e-08)
+    # rect = Rect(-0.38798823799911153, -0.35965403910189353, -0.6667188599577806, -0.6490099856470192)
 
-    data = data_gen(rect, 100, regen=False)
+    data = data_gen(rect, regen=False)
     plot = mandelbrot_viz(data)
     history_handle = HistoryHandler(plot)
     zoom_handler = ZoomHandler(plot, zoom_factor=0.8, history_handle=history_handle)

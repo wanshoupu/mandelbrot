@@ -5,11 +5,8 @@ from multiprocessing import Pool
 
 import numpy as np
 
-from constructs.decimal_complex import dcomplex_zeroes, dcomplex_add, dcomplex_sq, dclingrid
-
 FILE_PREFIX = 'tmp'
 PIXEL_X, PIXEL_Y = 2560, 1600
-ITER_N = 100
 CPU_CORES = 8
 PARALLELISM = CPU_CORES * 2
 
@@ -68,7 +65,9 @@ def clingrid(rect, width, height):
     return C
 
 
-def data_gen(rect: Rect, iterations, regen=False) -> MandelbrotData:
+def data_gen(rect: Rect, iterations=None, regen=False) -> MandelbrotData:
+    if iterations is None:
+        iterations = iter_heuristic(rect)
     filename = f"{FILE_PREFIX}-{iterations}-{rect.xmin}-{rect.xmax}-{rect.ymin}-{rect.ymax}.npz"
     if regen or not os.path.exists(filename):
         dataset, interior = mandelbrot_dataset(rect, PIXEL_X, PIXEL_Y, iterations)
@@ -90,3 +89,12 @@ def cache_cleanup():
     filename_pattern = f"{FILE_PREFIX}-*.npz"
     for filename in glob.glob(filename_pattern):
         os.remove(filename)
+
+
+def iter_heuristic(rect):
+    dx = rect.xmax - rect.xmin
+    dy = rect.ymax - rect.ymin
+    ex = int(-np.log10(dx + dy))
+    iterations = 1 << max(7, ex + 3)
+    print(f"Heuristic for {rect.xmin}-{rect.xmax}: {iterations}")
+    return iterations
