@@ -31,17 +31,14 @@ class MandelbrotData:
     dataset: np.ndarray
     interior: np.ndarray
     rect: np.ndarray
+    iterations: int
 
 
-def mandelbrot_dataset(rect: Rect, width, height):
-    precision = min(rect.xmax - rect.xmin, rect.ymax - rect.ymin)
-    use_dcomplex = np.isclose(precision, 0)
-    use_dcomplex = False
-
-    C = dclingrid(rect, width, height) if use_dcomplex else clingrid(rect, width, height)
+def mandelbrot_dataset(rect: Rect, width, height, iterations):
+    C = clingrid(rect, width, height)
     chunks = np.array_split(C, PARALLELISM, axis=0)
     with Pool(processes=CPU_CORES) as pool:
-        results = pool.map(mandelbrot_calc_dcomplex if use_dcomplex else mandelbrot_calc, chunks)
+        results = pool.starmap(mandelbrot_calc, [(c, iterations) for c in chunks])
 
     # Merge back along rows
     diverging_order_chunks, mask_interior_chunks = zip(*results)
@@ -50,25 +47,11 @@ def mandelbrot_dataset(rect: Rect, width, height):
     return diverging_order, mask_interior
 
 
-def mandelbrot_calc_dcomplex(C):
-    Z = dcomplex_zeroes(C.shape)
-    mask_interior = np.full(C.shape, True, dtype=bool)  # mask for interior points
-    diverging_order = np.zeros(C.shape)  # the number of iterations it takes to reach diverging point (> 2)
-    for i in range(ITER_N):
-        Z[mask_interior] = dcomplex_add(dcomplex_sq(Z[mask_interior]), C[mask_interior])
-        norm = np.abs(Z)
-        diverged = norm > 2
-        mask = diverged & mask_interior
-        diverging_order[mask] = i + 1 - np.log(np.log2(np.array(norm[mask], dtype=np.float64)))
-        mask_interior[mask] = False
-    return diverging_order, mask_interior
-
-
-def mandelbrot_calc(C):
+def mandelbrot_calc(C, iterations):
     Z = np.zeros_like(C)
     mask_interior = np.full(C.shape, True, dtype=bool)  # mask for interior points
     diverging_order = np.zeros(C.shape)  # the number of iterations it takes to reach diverging point (> 2)
-    for i in range(ITER_N):
+    for i in range(iterations):
         Z[mask_interior] = Z[mask_interior] ** 2 + C[mask_interior]
         norm = np.abs(Z)
         diverged = norm > 2
@@ -85,11 +68,11 @@ def clingrid(rect, width, height):
     return C
 
 
-def data_gen(rect: Rect, regen=False) -> MandelbrotData:
-    filename = f"{FILE_PREFIX}-{rect.xmin}-{rect.xmax}-{rect.ymin}-{rect.ymax}.npz"
+def data_gen(rect: Rect, iterations, regen=False) -> MandelbrotData:
+    filename = f"{FILE_PREFIX}-{iterations}-{rect.xmin}-{rect.xmax}-{rect.ymin}-{rect.ymax}.npz"
     if regen or not os.path.exists(filename):
-        dataset, interior = mandelbrot_dataset(rect, PIXEL_X, PIXEL_Y)
-        np.savez(filename, dataset=dataset, interior=interior, rect=rect.to_array())
+        dataset, interior = mandelbrot_dataset(rect, PIXEL_X, PIXEL_Y, iterations)
+        np.savez(filename, dataset=dataset, interior=interior, rect=rect.to_array(), iterations=iterations)
     return data_load(filename)
 
 
@@ -98,8 +81,9 @@ def data_load(filename: str) -> MandelbrotData:
     dataset = mandelbrot['dataset']
     interior = mandelbrot['interior']
     rect = np.array(mandelbrot['rect'])
+    iterations = mandelbrot['iterations']
     # Apply custom colormap for exterior
-    return MandelbrotData(dataset, interior, rect)
+    return MandelbrotData(dataset, interior, rect, iterations)
 
 
 def cache_cleanup():

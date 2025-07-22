@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt, image, colorbar
 from matplotlib.colors import LinearSegmentedColormap
 
 from constructs.data import Rect, MandelbrotData
-from matplotlib.widgets import Button
+from matplotlib.widgets import Button, TextBox
 
 
 @dataclass
@@ -17,6 +17,8 @@ class PlotHandle:
     btn_undo: Button
     btn_reset: Button
     btn_redo: Button
+    iter_box: TextBox
+    iterations: int
 
 
 @dataclass
@@ -50,24 +52,30 @@ def to_viz_data(mandelData: MandelbrotData) -> MandelbrotViz:
 
 
 def static_buttons(fig):
+    # Add a TextBox widget for iteration input
+    axbox = plt.axes((0.28, 0.92, 0.1, 0.03))  # [left, bottom, width, height]
+    iter_box = TextBox(axbox, 'Enter number:', initial='0')
+
     # Add Undo button
-    ax_undo = fig.add_axes((0.4, 0.92, 0.1, 0.05))  # [left, bottom, width, height]
+    ax_undo = fig.add_axes((0.4, 0.92, 0.1, 0.03))  # [left, bottom, width, height]
     btn_undo = Button(ax_undo, 'Undo')
 
     # Add Reset button
-    ax_reset = fig.add_axes((0.52, 0.92, 0.1, 0.05))  # [left, bottom, width, height]
+    ax_reset = fig.add_axes((0.52, 0.92, 0.1, 0.03))  # [left, bottom, width, height]
     btn_reset = Button(ax_reset, 'Reset')
 
     # Add Redo button
-    ax_redo = fig.add_axes((0.64, 0.92, 0.1, 0.05))
+    ax_redo = fig.add_axes((0.64, 0.92, 0.1, 0.03))
     btn_redo = Button(ax_redo, 'Redo')
-    return btn_undo, btn_reset, btn_redo
+    return btn_undo, btn_reset, btn_redo, iter_box
 
 
 def mandelbrot_viz(mandelData: MandelbrotData, handle: PlotHandle = None) -> PlotHandle:
     viz_data = to_viz_data(mandelData)
     if handle is None:
         fig, ax = plt.subplots()
+        fig.subplots_adjust(left=0, right=1, top=1, bottom=0)
+
         im = ax.imshow(
             viz_data.img,
             origin='lower',
@@ -78,8 +86,9 @@ def mandelbrot_viz(mandelData: MandelbrotData, handle: PlotHandle = None) -> Plo
         # Add colorbar
         cbar = plt.colorbar(im, ax=ax, shrink=0.8, pad=0.03)
         cbar.set_label("Escape Time (Smoothed Iterations)")
-        btn_undo, btn_reset, btn_redo = static_buttons(fig)
-        return PlotHandle(fig, ax, im, cbar, btn_undo, btn_reset, btn_redo)
+        btn_undo, btn_reset, btn_redo, iter_box = static_buttons(fig)
+        iter_box.set_val(str(mandelData.iterations))
+        return PlotHandle(fig, ax, im, cbar, btn_undo, btn_reset, btn_redo, iter_box, iterations=mandelData.iterations)
 
     fig, ax, im = handle.fig, handle.ax, handle.im
     im.set_data(viz_data.img)
