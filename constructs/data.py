@@ -96,5 +96,4 @@ def iter_heuristic(rect):
     dy = rect.ymax - rect.ymin
     ex = int(-np.log10(dx + dy))
     iterations = 1 << max(7, ex + 3)
-    print(f"Heuristic for {rect.xmin}-{rect.xmax}: {iterations}")
     return iterations
