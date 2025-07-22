@@ -53,19 +53,19 @@ def to_viz_data(mandelData: MandelbrotData) -> MandelbrotViz:
 
 def static_buttons(fig):
     # Add a TextBox widget for iteration input
-    axbox = plt.axes((0.28, 0.92, 0.1, 0.03))  # [left, bottom, width, height]
+    axbox = plt.axes((0.36, 0.92, 0.08, 0.03))  # [left, bottom, width, height]
     iter_box = TextBox(axbox, 'Enter number:', initial='0')
 
     # Add Undo button
-    ax_undo = fig.add_axes((0.4, 0.92, 0.1, 0.03))  # [left, bottom, width, height]
+    ax_undo = fig.add_axes((0.45, 0.92, 0.08, 0.03))  # [left, bottom, width, height]
     btn_undo = Button(ax_undo, 'Undo')
 
     # Add Reset button
-    ax_reset = fig.add_axes((0.52, 0.92, 0.1, 0.03))  # [left, bottom, width, height]
+    ax_reset = fig.add_axes((0.54, 0.92, 0.08, 0.03))  # [left, bottom, width, height]
     btn_reset = Button(ax_reset, 'Reset')
 
     # Add Redo button
-    ax_redo = fig.add_axes((0.64, 0.92, 0.1, 0.03))
+    ax_redo = fig.add_axes((0.63, 0.92, 0.08, 0.03))
     btn_redo = Button(ax_redo, 'Redo')
     return btn_undo, btn_reset, btn_redo, iter_box
 
