@@ -1,23 +1,26 @@
 import threading
 
-from constructs.data import PlotSpecs
+from constructs.data import PlotSpecs, data_gen
 from constructs.history import HistoryHandler
-from constructs.viz import PlotHandle
+from constructs.viz import PlotHandle, mandelbrot_viz
 
 DEBOUNCE_TIME = .1
 
 
 class ZoomHandler:
-    def __init__(self, plot_handle: PlotHandle, zoom_factor=0.5, history_handle: HistoryHandler = None):
+    def __init__(self, plot_handle: PlotHandle, zoom_factor=0.5, history_handle: HistoryHandler = None, regen=False):
         self.handle = plot_handle
         self.zoom_factor = zoom_factor
         self.cid = self.handle.fig.canvas.mpl_connect('button_press_event', self.on_click)
         self.sid = self.handle.fig.canvas.mpl_connect('scroll_event', self.on_scroll)
+        self.handle.iter_box.on_submit(self._on_iteration_change)
+
         self.history_handle = history_handle
         self.timer = None
         self.delay = 200  # milliseconds
         self.scroll_lock = threading.Lock()
         self.scroll_accumulator = 0
+        self.regen = regen
 
     def on_click(self, event):
         if event.inaxes != self.handle.ax or event.button != 1:
@@ -37,6 +40,12 @@ class ZoomHandler:
         self.handle.ax.set_xlim(specs.xmin, specs.xmax)
         self.handle.ax.set_ylim(specs.ymin, specs.ymax)
         self.handle.fig.canvas.draw_idle()
+
+        new_data = data_gen(specs, regen=self.regen)
+        handle = mandelbrot_viz(new_data, self.handle)
+        # cbar is created new
+        self.handle.cbar = handle.cbar
+
         if self.history_handle is not None:
             self.history_handle.append(specs)
 
@@ -59,6 +68,9 @@ class ZoomHandler:
         with self.scroll_lock:
             steps = self.scroll_accumulator
             self.scroll_accumulator = 0
+        if not steps:
+            return
+
         scale_factor = self.zoom_factor ** steps
 
         ax = event.inaxes
@@ -75,6 +87,31 @@ class ZoomHandler:
         ax.set_xlim(specs.xmin, specs.xmax)
         ax.set_ylim(specs.ymin, specs.ymax)
         event.canvas.draw_idle()
+
+        new_data = data_gen(specs, regen=self.regen)
+        handle = mandelbrot_viz(new_data, self.handle)
+        # cbar is created new
+        self.handle.cbar = handle.cbar
+
+        if self.history_handle is not None:
+            self.history_handle.append(specs)
+
+    def _on_iteration_change(self, text):
+        try:
+            iterations = int(text)
+            if iterations == self.handle.iterations:
+                return
+            self.handle.iterations = iterations
+        except ValueError:
+            print(f'Invalid number: {text}')
+            return
+
+        specs = PlotSpecs(*self.handle.ax.get_xlim() + self.handle.ax.get_ylim(), self.handle.iterations)
+        new_data = data_gen(specs, regen=self.regen)
+        handle = mandelbrot_viz(new_data, self.handle)
+        # cbar is created new
+        self.handle.cbar = handle.cbar
+
         if self.history_handle is not None:
             self.history_handle.append(specs)
 

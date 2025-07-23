@@ -1,12 +1,13 @@
-from constructs.data import PlotSpecs
-from constructs.viz import PlotHandle
+from constructs.data import PlotSpecs, data_gen
+from constructs.viz import PlotHandle, mandelbrot_viz
 
 
 class HistoryHandler:
-    def __init__(self, handle: PlotHandle):
+    def __init__(self, handle: PlotHandle, regen=False):
         self.history = [PlotSpecs(*handle.ax.get_xlim(), *handle.ax.get_ylim(), handle.iterations)]
         self.index = 0
         self.handle = handle
+        self.regen = regen
         self.init_specs = self.history[0]
 
         self.handle.btn_undo.on_clicked(self.undo)
@@ -24,6 +25,11 @@ class HistoryHandler:
         self.handle.iter_box.set_val(str(specs.iterations))
         self.handle.fig.canvas.draw_idle()
 
+        new_data = data_gen(specs, regen=self.regen)
+        handle = mandelbrot_viz(new_data, self.handle)
+        # cbar is created new
+        self.handle.cbar = handle.cbar
+
     def undo(self, event):
         print(f"Undo event (history length: {len(self.history)})")
         if self.index > 0:
@@ -34,6 +40,11 @@ class HistoryHandler:
             self.handle.ax.set_ylim(specs.ymin, specs.ymax)
             self.handle.iter_box.set_val(str(specs.iterations))
             self.handle.fig.canvas.draw_idle()
+
+            new_data = data_gen(specs, regen=self.regen)
+            handle = mandelbrot_viz(new_data, self.handle)
+            # cbar is created new
+            self.handle.cbar = handle.cbar
         else:
             print("Undo event ignored for history is empty.")
 
@@ -46,6 +57,11 @@ class HistoryHandler:
             self.handle.ax.set_ylim(specs.ymin, specs.ymax)
             self.handle.iter_box.set_val(str(specs.iterations))
             self.handle.fig.canvas.draw_idle()
+
+            new_data = data_gen(specs, regen=self.regen)
+            handle = mandelbrot_viz(new_data, self.handle)
+            # cbar is created new
+            self.handle.cbar = handle.cbar
         else:
             print("Redo click event ignored for future is empty.")
 

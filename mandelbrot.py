@@ -14,7 +14,6 @@ def interactive_plot():
     plot = mandelbrot_viz(data)
     history_handle = HistoryHandler(plot)
     zoom_handler = ZoomHandler(plot, zoom_factor=.6, history_handle=history_handle)
-    handler = DataRefreshHandler(plot, history_handle, regen=False)
     plt.tight_layout(pad=0.1)
     plt.show()
 
