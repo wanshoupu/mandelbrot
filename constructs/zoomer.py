@@ -1,6 +1,10 @@
-from constructs.data import Rect
+import threading
+
+from constructs.data import PlotSpecs
 from constructs.history import HistoryHandler
 from constructs.viz import PlotHandle
+
+DEBOUNCE_TIME = .1
 
 
 class ZoomHandler:
@@ -12,14 +16,8 @@ class ZoomHandler:
         self.history_handle = history_handle
         self.timer = None
         self.delay = 200  # milliseconds
-
-    def timer(self, callback):
-        # Restart timer
-        if self.timer is not None:
-            self.timer.stop()
-        self.timer = self.handle.ax.figure.canvas.new_timer(interval=self.delay)
-        self.timer.add_callback(callback)
-        self.timer.start()
+        self.scroll_lock = threading.Lock()
+        self.scroll_accumulator = 0
 
     def on_click(self, event):
         if event.inaxes != self.handle.ax or event.button != 1:
@@ -35,18 +33,33 @@ class ZoomHandler:
         dy = (y1 - y0) / 2
 
         # Set new limits centered on click
-        rect = Rect(x - dx, x + dx, y - dy, y + dy)
-        self.handle.ax.set_xlim(rect.xmin, rect.xmax)
-        self.handle.ax.set_ylim(rect.ymin, rect.ymax)
+        specs = PlotSpecs(x - dx, x + dx, y - dy, y + dy, self.handle.iterations)
+        self.handle.ax.set_xlim(specs.xmin, specs.xmax)
+        self.handle.ax.set_ylim(specs.ymin, specs.ymax)
         self.handle.fig.canvas.draw_idle()
         if self.history_handle is not None:
-            self.history_handle.append(rect)
+            self.history_handle.append(specs)
 
     def on_scroll(self, event):
         if event.inaxes != self.handle.ax:
             return
 
-        scale_factor = 1 / self.zoom_factor if event.step < 0 else self.zoom_factor
+        with self.scroll_lock:
+            self.scroll_accumulator += event.step  # step is +1/-1 per scroll
+            last_event = event  # save latest event
+            if self.timer is not None:
+                self.timer.cancel()
+
+            self.timer = threading.Timer(
+                DEBOUNCE_TIME, lambda: self.flush_scroll(last_event)
+            )
+            self.timer.start()
+
+    def flush_scroll(self, event):
+        with self.scroll_lock:
+            steps = self.scroll_accumulator
+            self.scroll_accumulator = 0
+        scale_factor = self.zoom_factor ** steps
 
         ax = event.inaxes
         xlim = ax.get_xlim()
@@ -58,12 +71,12 @@ class ZoomHandler:
         new_width = (xlim[1] - xlim[0]) * scale_factor
         new_height = (ylim[1] - ylim[0]) * scale_factor
 
-        rect = Rect(xdata - new_width / 2, xdata + new_width / 2, ydata - new_height / 2, ydata + new_height / 2)
-        ax.set_xlim(rect.xmin, rect.xmax)
-        ax.set_ylim(rect.ymin, rect.ymax)
+        specs = PlotSpecs(xdata - new_width / 2, xdata + new_width / 2, ydata - new_height / 2, ydata + new_height / 2, self.handle.iterations)
+        ax.set_xlim(specs.xmin, specs.xmax)
+        ax.set_ylim(specs.ymin, specs.ymax)
         event.canvas.draw_idle()
         if self.history_handle is not None:
-            self.history_handle.append(rect)
+            self.history_handle.append(specs)
 
 
 if __name__ == "__main__":

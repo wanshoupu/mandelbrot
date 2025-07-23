@@ -1,10 +1,12 @@
-from constructs.data import data_gen, Rect, iter_heuristic
+from constructs.data import data_gen, PlotSpecs, iter_heuristic
+from constructs.history import HistoryHandler
 from constructs.viz import PlotHandle, mandelbrot_viz
 
 
 class DataRefreshHandler:
-    def __init__(self, handle: PlotHandle, regen=False):
+    def __init__(self, handle: PlotHandle, history_handle: HistoryHandler = None, regen=False):
         self.handle = handle
+        self.history_handle = history_handle
         self.regen = regen
 
         self.timer = None
@@ -22,7 +24,7 @@ class DataRefreshHandler:
         # Update the latest limits on every event
         self.latest_xlim = self.handle.ax.get_xlim()
         self.latest_ylim = self.handle.ax.get_ylim()
-        rect = Rect(*self.latest_xlim + self.latest_ylim)
+        rect = PlotSpecs(*self.latest_xlim + self.latest_ylim)
         self.handle.iterations = iter_heuristic(rect)
         self.handle.iter_box.set_val(str(self.handle.iterations))
 
@@ -35,8 +37,8 @@ class DataRefreshHandler:
 
     def _process_latest_limits(self):
         print(f"Processing latest limits:\n  Rect{self.latest_xlim + self.latest_ylim} iterations: {self.handle.iterations}")
-        rect = Rect(*self.latest_xlim + self.latest_ylim)
-        new_data = data_gen(rect, self.handle.iterations, regen=self.regen)
+        specs = PlotSpecs(*self.latest_xlim, *self.latest_ylim, self.handle.iterations)
+        new_data = data_gen(specs, regen=self.regen)
         handle = mandelbrot_viz(new_data, self.handle)
         # cbar is created new
         self.handle.cbar = handle.cbar
@@ -44,8 +46,16 @@ class DataRefreshHandler:
 
     def _on_iteration_change(self, text):
         try:
-            self.handle.iterations = int(text)
+            iterations = int(text)
+            if iterations == self.handle.iterations:
+                return
         except ValueError:
             print(f'Invalid number: {text}')
+            return
 
+        old_iterations = self.handle.iterations
+        if self.history_handle is not None:
+            specs = PlotSpecs(*self.latest_xlim + self.latest_ylim, old_iterations)
+            self.history_handle.append(specs)
+        self.handle.iterations = iterations
         self._process_latest_limits()

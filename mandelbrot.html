@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+
+<!-- Plot -->
+<div id="plot" style="width:600px;height:600px;"></div>
+
+<!-- Controls -->
+<input id="scaleFactor" type="number" value="1" step="0.1" />
+<button onclick="rescale()">Rescale Image</button>
+
+<script>
+    const rows = 2000;
+    const cols = 2000;
+    const z = [];
+
+    for (let i = 0; i < rows; i++) {
+      const row = [];
+      for (let j = 0; j < cols; j++) {
+        // Replace this with any function you want
+        const val = Math.sin(i / 100) * Math.cos(j / 100);
+        row.push(val);
+      }
+      z.push(row);
+    }
+
+  function drawPlot() {
+    Plotly.newPlot('plot', [{
+      z: z,
+      type: 'heatmap',
+      colorscale: 'Jet'
+    }], {
+      title: 'Interactive Imshow',
+      dragmode: 'pan',  // allows pan + zoom
+    });
+  }
+
+  drawPlot();
+
+  // Zoom/pan enabled by default, but can customize with:
+  const plot = document.getElementById('plot');
+  plot.on('plotly_click', function(data) {
+    const x = data.points[0].x;
+    const y = data.points[0].y;
+    const val = z[y][x];  // Note y first for row index
+    alert(`You clicked on (${x}, ${y}) with value ${val}`);
+  });
+
+  // Button + input box to rescale image
+  function rescale() {
+    const factor = parseFloat(document.getElementById('scaleFactor').value);
+    z = z.map(row => row.map(val => val * factor));
+    drawPlot();
+  }
+</script>
+
+</body>
+</html>

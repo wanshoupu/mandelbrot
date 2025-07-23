@@ -1,6 +1,6 @@
 import glob
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, astuple
 from multiprocessing import Pool
 
 import numpy as np
@@ -13,15 +13,18 @@ THRESHOLD = 2
 
 
 @dataclass
-class Rect:
+class PlotSpecs:
     xmin: float
     xmax: float
     ymin: float
     ymax: float
+    iterations: int = None
 
-    def to_array(self):
-        array = np.array([self.xmin, self.xmax, self.ymin, self.ymax])
-        return array
+    def __post_init__(self):
+        if self.iterations is None:
+            self.iterations = iter_heuristic(self)
+        else:
+            self.iterations = int(self.iterations)
 
 
 @dataclass
@@ -29,11 +32,10 @@ class MandelbrotData:
     dataset: np.ndarray
     interior: np.ndarray
     rect: np.ndarray
-    iterations: int
 
 
-def mandelbrot_dataset(rect: Rect, width, height, iterations):
-    C = clingrid(rect, width, height)
+def mandelbrot_dataset(specs: PlotSpecs, width, height, iterations):
+    C = clingrid(specs, width, height)
     chunks = np.array_split(C, PARALLELISM, axis=0)
     with Pool(processes=CPU_CORES) as pool:
         results = pool.starmap(mandelbrot_calc, [(c, iterations) for c in chunks])
@@ -66,14 +68,12 @@ def clingrid(rect, width, height):
     return C
 
 
-def data_gen(rect: Rect, iterations=None, regen=False) -> MandelbrotData:
-    if iterations is None:
-        iterations = iter_heuristic(rect)
-    filename = f"{FILE_PREFIX}-{iterations}-{rect.xmin}-{rect.xmax}-{rect.ymin}-{rect.ymax}.npz"
+def data_gen(rect: PlotSpecs, regen=False) -> MandelbrotData:
+    filename = f"{FILE_PREFIX}-{rect.iterations}-{rect.xmin}-{rect.xmax}-{rect.ymin}-{rect.ymax}.npz"
     if regen or not os.path.exists(filename):
-        print(f"Generating data for:\n  Rect{tuple(rect.to_array())} iterations: {iterations}")
-        dataset, interior = mandelbrot_dataset(rect, PIXEL_X, PIXEL_Y, iterations)
-        np.savez(filename, dataset=dataset, interior=interior, rect=rect.to_array(), iterations=iterations)
+        print(f"Generating data for:\n  Rect{astuple(rect)}")
+        dataset, interior = mandelbrot_dataset(rect, PIXEL_X, PIXEL_Y, rect.iterations)
+        np.savez(filename, dataset=dataset, interior=interior, rect=np.array(astuple(rect)))
     return data_load(filename)
 
 
@@ -82,9 +82,8 @@ def data_load(filename: str) -> MandelbrotData:
     dataset = mandelbrot['dataset']
     interior = mandelbrot['interior']
     rect = np.array(mandelbrot['rect'])
-    iterations = mandelbrot['iterations']
     # Apply custom colormap for exterior
-    return MandelbrotData(dataset, interior, rect, iterations)
+    return MandelbrotData(dataset, interior, rect)
 
 
 def cache_cleanup():

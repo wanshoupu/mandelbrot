@@ -1,13 +1,13 @@
-from constructs.data import Rect
+from constructs.data import PlotSpecs
 from constructs.viz import PlotHandle
 
 
 class HistoryHandler:
     def __init__(self, handle: PlotHandle):
-        self.history = [Rect(*handle.ax.get_xlim() + handle.ax.get_ylim())]
+        self.history = [PlotSpecs(*handle.ax.get_xlim(), *handle.ax.get_ylim(), handle.iterations)]
         self.index = 0
         self.handle = handle
-        self.init_rect = self.history[0]
+        self.init_specs = self.history[0]
 
         self.handle.btn_undo.on_clicked(self.undo)
         self.handle.btn_reset.on_clicked(self.reset)
@@ -15,37 +15,42 @@ class HistoryHandler:
 
     def reset(self, event):
         print(f"Reset event")
-        rect = self.init_rect
-        self.history = [rect]
+        specs = self.init_specs
+        self.history = [specs]
         self.index = 0
 
-        self.handle.ax.set_xlim(rect.xmin, rect.xmax)
-        self.handle.ax.set_ylim(rect.ymin, rect.ymax)
+        self.handle.ax.set_xlim(specs.xmin, specs.xmax)
+        self.handle.ax.set_ylim(specs.ymin, specs.ymax)
+        self.handle.iter_box.set_val(str(specs.iterations))
         self.handle.fig.canvas.draw_idle()
 
     def undo(self, event):
-        print(f"Undo event")
+        print(f"Undo event (history length: {len(self.history)})")
         if self.index > 0:
             self.index -= 1
-            rect = self.history[self.index]
+            specs = self.history[self.index]
             # Set new limits centered on click
-            self.handle.ax.set_xlim(rect.xmin, rect.xmax)
-            self.handle.ax.set_ylim(rect.ymin, rect.ymax)
+            self.handle.ax.set_xlim(specs.xmin, specs.xmax)
+            self.handle.ax.set_ylim(specs.ymin, specs.ymax)
+            self.handle.iter_box.set_val(str(specs.iterations))
             self.handle.fig.canvas.draw_idle()
         else:
             print("Undo event ignored for history is empty.")
 
     def redo(self, event):
-        print(f"Redo event")
+        print(f"Redo event (history length: {len(self.history)})")
         if self.index < len(self.history) - 1:
             self.index += 1
-            rect = self.history[self.index]
-            self.handle.ax.set_xlim(rect.xmin, rect.xmax)
-            self.handle.ax.set_ylim(rect.ymin, rect.ymax)
+            specs = self.history[self.index]
+            self.handle.ax.set_xlim(specs.xmin, specs.xmax)
+            self.handle.ax.set_ylim(specs.ymin, specs.ymax)
+            self.handle.iter_box.set_val(str(specs.iterations))
             self.handle.fig.canvas.draw_idle()
         else:
             print("Redo click event ignored for future is empty.")
 
-    def append(self, rect: Rect):
-        self.history.append(rect)
+    def append(self, specs: PlotSpecs):
+        while self.index < len(self.history) - 1:
+            self.history.pop()
+        self.history.append(specs)
         self.index += 1

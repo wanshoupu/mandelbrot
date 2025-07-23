@@ -4,7 +4,7 @@ import numpy as np
 from matplotlib import pyplot as plt, image, colorbar
 from matplotlib.colors import LinearSegmentedColormap
 
-from constructs.data import Rect, MandelbrotData
+from constructs.data import PlotSpecs, MandelbrotData
 from matplotlib.widgets import Button, TextBox
 
 
@@ -27,13 +27,13 @@ class MandelbrotViz:
     cmap: LinearSegmentedColormap
     vmin: float
     vmax: float
-    rect: Rect
+    specs: PlotSpecs
 
 
 def to_viz_data(mandelData: MandelbrotData) -> MandelbrotViz:
     dataset = mandelData.dataset
     interior = mandelData.interior
-    rect = Rect(*mandelData.rect)
+    rect = PlotSpecs(*mandelData.rect)
     pixelx, pixely = dataset.shape
     cmap_ext = LinearSegmentedColormap.from_list(
         "electric", ["#000428", "#004e92", "#00d4ff", "#ffffff"], N=1024
@@ -81,14 +81,14 @@ def mandelbrot_viz(mandelData: MandelbrotData, handle: PlotHandle = None) -> Plo
             origin='lower',
             cmap=viz_data.cmap,
             vmin=viz_data.vmin, vmax=viz_data.vmax,
-            extent=(viz_data.rect.xmin, viz_data.rect.xmax, viz_data.rect.ymin, viz_data.rect.ymax),
+            extent=(viz_data.specs.xmin, viz_data.specs.xmax, viz_data.specs.ymin, viz_data.specs.ymax),
         )
         # Add colorbar
         cbar = plt.colorbar(im, ax=ax, shrink=0.8, pad=0.03)
         cbar.set_label("Escape Time (Smoothed Iterations)")
         btn_undo, btn_reset, btn_redo, iter_box = static_buttons(fig)
-        iter_box.set_val(str(mandelData.iterations))
-        return PlotHandle(fig, ax, im, cbar, btn_undo, btn_reset, btn_redo, iter_box, iterations=mandelData.iterations)
+        iter_box.set_val(str(viz_data.specs.iterations))
+        return PlotHandle(fig, ax, im, cbar, btn_undo, btn_reset, btn_redo, iter_box, iterations=viz_data.specs.iterations)
 
     fig, ax, im = handle.fig, handle.ax, handle.im
     im.set_data(viz_data.img)
