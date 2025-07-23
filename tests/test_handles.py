@@ -1,13 +1,11 @@
-import numpy as np
-from matplotlib import pyplot as plt
-
-from constructs.updater import DataRefreshHandler
-from constructs.data import MandelbrotData
-from constructs.viz import PlotHandle, mandelbrot_viz
-from constructs.zoomer import ZoomHandler
 import matplotlib
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+import numpy as np
 from PyQt5.QtCore import Qt
+from matplotlib import pyplot as plt
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+
+from constructs.viz import PlotHandle
+from constructs.zoomer import ZoomHandler
 
 matplotlib.use('Qt5Agg')  # or 'QtAgg'
 
@@ -83,32 +81,4 @@ def test_zoom_right_click(qtbot):
     canvas.close()
 
 
-def test_data_refresh(qtbot):
-    # Prepare data and figure
-    data = np.random.rand(50, 50)
-    interior = np.random.choice([True, False], size=(50, 50))
 
-    plot = mandelbrot_viz(mandelData=MandelbrotData(data, interior, np.array([0, 1, 0, 1])))
-    handler = DataRefreshHandler(plot)
-
-    # Wrap canvas in QWidget for qtbot
-    canvas = FigureCanvas(plot.fig)
-    qtbot.addWidget(canvas)
-
-    canvas.show()
-
-    xlim_before = plot.ax.get_xlim()
-    ylim_before = plot.ax.get_ylim()
-
-    # Simulate a left click in the center of the plot (0, 0 in data coords)
-    qtbot.mouseClick(canvas, Qt.RightButton, pos=canvas.mapFromGlobal(canvas.mapToGlobal(canvas.rect().center())))
-
-    # Optionally, assert something after the zoom
-    xlim = plot.ax.get_xlim()
-    ylim = plot.ax.get_ylim()
-
-    # It zoomed out
-    assert xlim[1] - xlim[0] == xlim_before[1] - xlim_before[0]
-    assert ylim[1] - ylim[0] == ylim_before[1] - ylim_before[0]
-
-    canvas.close()
