@@ -31,10 +31,10 @@ class MandelbrotViz:
 
 
 def to_viz_data(mandelData: MandelbrotData) -> MandelbrotViz:
-    dataset = mandelData.dataset
+    escapes = mandelData.escapes
     interior = mandelData.interior
-    rect = PlotSpecs(*mandelData.rect)
-    pixelx, pixely = dataset.shape
+    specs = PlotSpecs(*mandelData.rect)
+    pixelx, pixely = escapes.shape
     cmap_ext = LinearSegmentedColormap.from_list(
         "electric", ["#000428", "#004e92", "#00d4ff", "#ffffff"], N=1024
     )
@@ -42,13 +42,13 @@ def to_viz_data(mandelData: MandelbrotData) -> MandelbrotViz:
     # Create image array
     img = np.zeros((pixelx, pixely, 3))
     # Normalize exterior values for coloring
-    vmin, vmax = dataset.min(), dataset.max()
-    norm_div = dataset / vmax
+    vmin, vmax = escapes.min(), escapes.max()
+    norm_div = escapes / vmax
     # Apply colormap to diverged (exterior) points
     img[~interior] = cmap_ext(norm_div[~interior])[:, :3]  # drop alpha
     # Set interior (non-diverged) points to solid color (e.g., black or red)
     img[interior] = [0, 0, 0]  # deep red interior
-    return MandelbrotViz(img, cmap_ext, vmin, vmax, rect)
+    return MandelbrotViz(img, cmap_ext, vmin, vmax, specs)
 
 
 def static_buttons(fig):

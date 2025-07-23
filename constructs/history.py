@@ -4,7 +4,7 @@ from constructs.viz import PlotHandle, mandelbrot_viz
 
 class HistoryHandler:
     def __init__(self, handle: PlotHandle, regen=False):
-        self.history = [PlotSpecs(*handle.ax.get_xlim(), *handle.ax.get_ylim(), handle.iterations)]
+        self.history = [PlotSpecs(*handle.ax.get_xlim(), *handle.ax.get_ylim(), iterations=handle.iterations)]
         self.index = 0
         self.handle = handle
         self.regen = regen
@@ -31,7 +31,7 @@ class HistoryHandler:
         self.handle.cbar = handle.cbar
 
     def undo(self, event):
-        print(f"Undo event (history length: {len(self.history)})")
+        print(f"Undo event at index {self.index} (history length: {len(self.history)})")
         if self.index > 0:
             self.index -= 1
             specs = self.history[self.index]
@@ -49,7 +49,7 @@ class HistoryHandler:
             print("Undo event ignored for history is empty.")
 
     def redo(self, event):
-        print(f"Redo event (history length: {len(self.history)})")
+        print(f"Redo event at index {self.index} (history length: {len(self.history)})")
         if self.index < len(self.history) - 1:
             self.index += 1
             specs = self.history[self.index]
