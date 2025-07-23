@@ -16,6 +16,9 @@ class DataRefreshHandler:
         self.handle.iter_box.on_submit(self._on_iteration_change)
 
     def _on_limit_change(self, event_ax):
+        if self.latest_xlim == event_ax.get_xlim() and self.latest_ylim == event_ax.get_ylim():
+            # skip identical limits
+            return
         # Update the latest limits on every event
         self.latest_xlim = self.handle.ax.get_xlim()
         self.latest_ylim = self.handle.ax.get_ylim()

@@ -9,6 +9,7 @@ FILE_PREFIX = 'tmp'
 PIXEL_X, PIXEL_Y = 2560, 1600
 CPU_CORES = 8
 PARALLELISM = CPU_CORES * 2
+THRESHOLD = 2
 
 
 @dataclass
@@ -47,11 +48,11 @@ def mandelbrot_dataset(rect: Rect, width, height, iterations):
 def mandelbrot_calc(C, iterations):
     Z = np.zeros_like(C)
     mask_interior = np.full(C.shape, True, dtype=bool)  # mask for interior points
-    diverging_order = np.zeros(C.shape)  # the number of iterations it takes to reach diverging point (> 2)
+    diverging_order = np.zeros(C.shape)  # the number of iterations it takes to reach diverging point (> THRESHOLD)
     for i in range(iterations):
         Z[mask_interior] = Z[mask_interior] ** 2 + C[mask_interior]
         norm = np.abs(Z)
-        diverged = norm > 2
+        diverged = norm > THRESHOLD
         mask = diverged & mask_interior
         diverging_order[mask] = i + 1 - np.log(np.log2(np.array(norm[mask], dtype=np.float64)))
         mask_interior[mask] = False
@@ -70,6 +71,7 @@ def data_gen(rect: Rect, iterations=None, regen=False) -> MandelbrotData:
         iterations = iter_heuristic(rect)
     filename = f"{FILE_PREFIX}-{iterations}-{rect.xmin}-{rect.xmax}-{rect.ymin}-{rect.ymax}.npz"
     if regen or not os.path.exists(filename):
+        print(f"Generating data for:\n  Rect{tuple(rect.to_array())} iterations: {iterations}")
         dataset, interior = mandelbrot_dataset(rect, PIXEL_X, PIXEL_Y, iterations)
         np.savez(filename, dataset=dataset, interior=interior, rect=rect.to_array(), iterations=iterations)
     return data_load(filename)
@@ -94,6 +96,5 @@ def cache_cleanup():
 def iter_heuristic(rect):
     dx = rect.xmax - rect.xmin
     dy = rect.ymax - rect.ymin
-    ex = int(-np.log10(dx + dy))
-    iterations = 1 << max(7, ex + 3)
-    return iterations
+    iterations = int(150 * np.log10(dx * dy) - 209 * np.log10(dx * dy) + 327)
+    return min(iterations, 2048)

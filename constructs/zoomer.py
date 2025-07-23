@@ -4,7 +4,7 @@ from constructs.viz import PlotHandle
 
 
 class ZoomHandler:
-    def __init__(self, plot_handle: PlotHandle, zoom_factor=0.1, history_handle: HistoryHandler = None):
+    def __init__(self, plot_handle: PlotHandle, zoom_factor=0.5, history_handle: HistoryHandler = None):
         self.handle = plot_handle
         self.zoom_factor = zoom_factor
         self.cid = self.handle.fig.canvas.mpl_connect('button_press_event', self.on_click)
