@@ -1,9 +1,8 @@
 import matplotlib.pyplot as plt
 
-from constructs.history import HistoryHandler
-from constructs.updater import DataRefreshHandler
 from constructs.data import data_gen, PlotSpecs, cache_cleanup, iter_heuristic
-from constructs.viz import mandelbrot_viz, PlotHandle
+from constructs.history import HistoryHandler
+from constructs.viz import mandelbrot_viz
 from constructs.zoomer import ZoomHandler
 
 
@@ -48,11 +47,10 @@ def static_plot():
         (PlotSpecs(0.4368069999763344, 0.4398493614168821, -0.35852693900808164, -0.35662546310773924), 500),
     ]
     for rect, it in rects:
-        data = data_gen(rect, iter_heuristic(rect), regen=True)
+        data = data_gen(rect, regen=True)
         plot = mandelbrot_viz(data)
         history_handle = HistoryHandler(plot)
         zoom_handler = ZoomHandler(plot, history_handle=history_handle)
-        handler = DataRefreshHandler(plot, regen=False)
         plt.show()
 
 
