@@ -101,14 +101,21 @@ class ZoomHandler:
             iterations = int(text)
             if iterations == self.handle.iterations:
                 return
-            self.handle.iterations = iterations
+            iteration_delta = iterations - self.handle.iterations
         except ValueError:
             print(f'Invalid number: {text}')
             return
+        if iteration_delta < 0:
+            specs = PlotSpecs(*self.handle.ax.get_xlim() + self.handle.ax.get_ylim(), iterations)
+            self.handle.data = data_gen(specs, regen=self.regen)
+        else:
+            specs = PlotSpecs(*self.handle.ax.get_xlim() + self.handle.ax.get_ylim(), self.handle.iterations)
+            Z_init = self.handle.data.Z
+            self.handle.data = data_gen(specs, regen=self.regen, iterations_delta=iteration_delta, Z=Z_init)
+            self.handle.iterations += iteration_delta
 
-        specs = PlotSpecs(*self.handle.ax.get_xlim() + self.handle.ax.get_ylim(), self.handle.iterations)
-        new_data = data_gen(specs, regen=self.regen)
-        handle = mandelbrot_viz(new_data, self.handle)
+        handle = mandelbrot_viz(handle=self.handle)
+
         # cbar is created new
         self.handle.cbar = handle.cbar
 
@@ -119,12 +126,15 @@ class ZoomHandler:
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
     import numpy as np
+    from matplotlib.widgets import TextBox, Button
 
     fig, ax = plt.subplots()
     data = np.random.rand(100, 100)
     im = ax.imshow(data, cmap='viridis')
     cbar = ax.figure.colorbar(im, ax=ax)
-    handle = PlotHandle(fig, ax, im, cbar, None, None, None)
+    axbox = plt.axes((0.36, 0.92, 0.08, 0.03))  # [left, bottom, width, height]
+    iter_box = TextBox(axbox, 'Enter number:', initial='0')
+    handle = PlotHandle(fig, ax, im, cbar, Button(axbox, 'Undo'), Button(axbox, 'Undo'), Button(axbox, 'Undo'), iter_box=iter_box, iterations=10, data=data)
     zh = ZoomHandler(handle, .5)
     plt.title("Scroll anywhere in plot")
     plt.show()

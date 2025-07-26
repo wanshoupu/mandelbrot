@@ -1,11 +1,9 @@
 from dataclasses import dataclass
 
-import numpy as np
 from matplotlib import pyplot as plt, image, colorbar
-from matplotlib.colors import LinearSegmentedColormap
-
-from constructs.data import PlotSpecs, MandelbrotData
 from matplotlib.widgets import Button, TextBox
+
+from constructs.data import MandelbrotData
 
 
 @dataclass
@@ -19,36 +17,7 @@ class PlotHandle:
     btn_redo: Button
     iter_box: TextBox
     iterations: int
-
-
-@dataclass
-class MandelbrotViz:
-    img: np.ndarray
-    cmap: LinearSegmentedColormap
-    vmin: float
-    vmax: float
-    specs: PlotSpecs
-
-
-def to_viz_data(mandelData: MandelbrotData) -> MandelbrotViz:
-    escapes = mandelData.escapes
-    interior = mandelData.interior
-    specs = PlotSpecs(*mandelData.rect)
-    pixelx, pixely = escapes.shape
-    cmap_ext = LinearSegmentedColormap.from_list(
-        "electric", ["#000428", "#004e92", "#00d4ff", "#ffffff"], N=1024
-    )
-
-    # Create image array
-    img = np.zeros((pixelx, pixely, 3))
-    # Normalize exterior values for coloring
-    vmin, vmax = escapes.min(), escapes.max()
-    norm_div = escapes / vmax
-    # Apply colormap to diverged (exterior) points
-    img[~interior] = cmap_ext(norm_div[~interior])[:, :3]  # drop alpha
-    # Set interior (non-diverged) points to solid color (e.g., black or red)
-    img[interior] = [0, 0, 0]  # deep red interior
-    return MandelbrotViz(img, cmap_ext, vmin, vmax, specs)
+    data: MandelbrotData = None
 
 
 def static_buttons(fig):
@@ -70,11 +39,22 @@ def static_buttons(fig):
     return btn_undo, btn_reset, btn_redo, iter_box
 
 
-def mandelbrot_viz(mandelData: MandelbrotData, handle: PlotHandle = None) -> PlotHandle:
-    viz_data = to_viz_data(mandelData)
+def mandelbrot_viz(mandelData: MandelbrotData = None, handle: PlotHandle = None) -> PlotHandle:
+    assert mandelData is not None or handle is not None
+    if mandelData is None:
+        mandelData = handle.data
+    viz_data = mandelData.to_viz_data()
     if handle is None:
         fig, ax = plt.subplots()
         fig.subplots_adjust(left=0, right=1, top=1, bottom=0)
+
+        # Define the key press event handler
+        def on_key(event):
+            if event.key == 'f':  # press 'f' to toggle fullscreen
+                fig.canvas.manager.full_screen_toggle()
+
+        # Connect the key press event
+        fig.canvas.mpl_connect('key_press_event', on_key)
 
         im = ax.imshow(
             viz_data.img,
@@ -88,20 +68,12 @@ def mandelbrot_viz(mandelData: MandelbrotData, handle: PlotHandle = None) -> Plo
         cbar.set_label("Escape Time (Smoothed Iterations)")
         btn_undo, btn_reset, btn_redo, iter_box = static_buttons(fig)
         iter_box.set_val(str(viz_data.specs.iterations))
-        return PlotHandle(fig, ax, im, cbar, btn_undo, btn_reset, btn_redo, iter_box, iterations=viz_data.specs.iterations)
+        return PlotHandle(fig, ax, im, cbar, btn_undo, btn_reset, btn_redo, iter_box, iterations=viz_data.specs.iterations, data=mandelData)
 
     fig, ax, im = handle.fig, handle.ax, handle.im
     im.set_data(viz_data.img)
     im.set_extent(ax.get_xlim() + ax.get_ylim())
     fig.canvas.draw_idle()
-
-    # Define the key press event handler
-    def on_key(event):
-        if event.key == 'f':  # press 'f' to toggle fullscreen
-            fig.canvas.manager.full_screen_toggle()
-
-    # Connect the key press event
-    fig.canvas.mpl_connect('key_press_event', on_key)
 
     # Remove the old colorbar
     handle.cbar.remove()
@@ -110,4 +82,5 @@ def mandelbrot_viz(mandelData: MandelbrotData, handle: PlotHandle = None) -> Plo
     handle.cbar.set_label("Escape Time (Smoothed Iterations)")
     # plt.axis("off")
     # plt.savefig(f"{filename}.png", dpi=600, bbox_inches="tight", pad_inches=0)
+    handle.data = mandelData
     return handle
