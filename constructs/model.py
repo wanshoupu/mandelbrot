@@ -11,17 +11,35 @@ CMAP_EXT = LinearSegmentedColormap.from_list(
 )
 
 
+@dataclass
+class PlotSpecs:
+    xmin: float
+    xmax: float
+    ymin: float
+    ymax: float
+    iterations: int = None
+    width: int = PIXEL_X
+    height: int = PIXEL_Y
+
+    def __post_init__(self):
+        if self.iterations is None:
+            self.iterations = iter_heuristic(self)
+        else:
+            self.iterations = int(self.iterations)
+        self.width, self.height = int(self.width), int(self.height)
+
+
 @dataclass(frozen=True)
 class MandelbrotData:
     escapes: np.ndarray
     interior: np.ndarray
-    rect: np.ndarray
+    specs: np.ndarray
     Z: np.ndarray = None
 
     def to_viz_data(self) -> 'MandelbrotViz':
         escapes = self.escapes
         interior = self.interior
-        specs = PlotSpecs(*self.rect)
+        specs = PlotSpecs(*self.specs)
         pixelx, pixely = escapes.shape
 
         # Create image array
@@ -34,6 +52,9 @@ class MandelbrotData:
         # Set interior (non-diverged) points to solid color (e.g., black)
         img[interior] = [0, 0, 0]  # dark interior
         return MandelbrotViz(img, CMAP_EXT, vmin, vmax, specs)
+
+    def to_specs(self) -> PlotSpecs:
+        return PlotSpecs(*self.specs)
 
 
 @dataclass
@@ -58,24 +79,6 @@ class PlotHandle:
         box.eventson = events_on
         box.set_val(str(iterations))
         box.eventson = eventson
-
-
-@dataclass
-class PlotSpecs:
-    xmin: float
-    xmax: float
-    ymin: float
-    ymax: float
-    iterations: int = None
-    # iterations_delta: int = None
-    width: int = PIXEL_X
-    height: int = PIXEL_Y
-
-    def __post_init__(self):
-        if self.iterations is None:
-            self.iterations = iter_heuristic(self)
-        else:
-            self.iterations = int(self.iterations)
 
 
 @dataclass(frozen=True)
