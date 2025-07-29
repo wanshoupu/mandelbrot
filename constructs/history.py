@@ -1,5 +1,6 @@
-from constructs.data import PlotSpecs, data_gen
-from constructs.viz import PlotHandle, mandelbrot_viz
+from constructs.data import data_gen
+from constructs.viz import mandelbrot_viz
+from constructs.model import PlotHandle, PlotSpecs
 
 
 class HistoryHandler:

@@ -1,79 +1,16 @@
 import os
-from dataclasses import dataclass, astuple
+from dataclasses import astuple
 from multiprocessing import Pool
 
 import numpy as np
-from matplotlib.colors import LinearSegmentedColormap
 
 from constructs.cache import cache_manager
+from constructs.model import PlotSpecs, MandelbrotData
 
-PIXEL_X, PIXEL_Y = 2560, 1600
 CPU_CORES = 8
 PARALLELISM = CPU_CORES * 2
 THRESHOLD = 2
 complex_type = np.complex128
-
-CMAP_EXT = LinearSegmentedColormap.from_list(
-    "electric", ["#000428", "#004e92", "#00d4ff", "#ffffff"], N=1024
-)
-
-
-def iter_heuristic(rect):
-    dx = rect.xmax - rect.xmin
-    dy = rect.ymax - rect.ymin
-    iterations = int(150 * np.log10(dx * dy) - 209 * np.log10(dx * dy) + 327)
-    return min(iterations, 2048)
-
-
-@dataclass
-class PlotSpecs:
-    xmin: float
-    xmax: float
-    ymin: float
-    ymax: float
-    iterations: int = None
-    width: int = PIXEL_X
-    height: int = PIXEL_Y
-
-    def __post_init__(self):
-        if self.iterations is None:
-            self.iterations = iter_heuristic(self)
-        else:
-            self.iterations = int(self.iterations)
-
-
-@dataclass(frozen=True)
-class MandelbrotViz:
-    img: np.ndarray
-    cmap: LinearSegmentedColormap
-    vmin: float
-    vmax: float
-    specs: PlotSpecs
-
-
-@dataclass(frozen=True)
-class MandelbrotData:
-    escapes: np.ndarray
-    interior: np.ndarray
-    rect: np.ndarray
-    Z: np.ndarray = None
-
-    def to_viz_data(self) -> MandelbrotViz:
-        escapes = self.escapes
-        interior = self.interior
-        specs = PlotSpecs(*self.rect)
-        pixelx, pixely = escapes.shape
-
-        # Create image array
-        img = np.zeros((pixelx, pixely, 3))
-        # Normalize exterior values for coloring
-        vmin, vmax = escapes.min(), escapes.max()
-        norm_div = escapes / vmax
-        # Apply colormap to diverged (exterior) points
-        img[~interior] = CMAP_EXT(norm_div[~interior])[:, :3]  # drop alpha
-        # Set interior (non-diverged) points to solid color (e.g., black or red)
-        img[interior] = [0, 0, 0]  # deep red interior
-        return MandelbrotViz(img, CMAP_EXT, vmin, vmax, specs)
 
 
 def mandelbrot_calc(C: np.array, iterations, Z: np.array):

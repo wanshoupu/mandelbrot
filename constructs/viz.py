@@ -1,23 +1,7 @@
-from dataclasses import dataclass
-
-from matplotlib import pyplot as plt, image, colorbar
+from matplotlib import pyplot as plt
 from matplotlib.widgets import Button, TextBox
 
-from constructs.data import MandelbrotData
-
-
-@dataclass
-class PlotHandle:
-    fig: plt.Figure
-    ax: plt.Axes
-    im: image.AxesImage
-    cbar: colorbar.Colorbar
-    btn_undo: Button
-    btn_reset: Button
-    btn_redo: Button
-    iter_box: TextBox
-    iterations: int
-    data: MandelbrotData = None
+from constructs.model import PlotHandle, MandelbrotData
 
 
 def static_buttons(fig):

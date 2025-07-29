@@ -1,8 +1,9 @@
 import threading
 
-from constructs.data import PlotSpecs, data_gen
+from constructs.data import data_gen
 from constructs.history import HistoryHandler
-from constructs.viz import PlotHandle, mandelbrot_viz
+from constructs.viz import mandelbrot_viz
+from constructs.model import PlotHandle, PlotSpecs
 
 DEBOUNCE_TIME = .1
 

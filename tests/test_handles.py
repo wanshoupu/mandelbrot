@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
-from constructs.viz import PlotHandle
+from constructs.model import PlotHandle
 from constructs.zoomer import ZoomHandler
 
 matplotlib.use('Qt5Agg')  # or 'QtAgg'

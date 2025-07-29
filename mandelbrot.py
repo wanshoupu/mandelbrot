@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 
-from constructs.data import data_gen, PlotSpecs, cache_cleanup, iter_heuristic
+from constructs.data import data_gen, cache_cleanup
+from constructs.model import PlotSpecs, iter_heuristic
 from constructs.history import HistoryHandler
 from constructs.viz import mandelbrot_viz
 from constructs.zoomer import ZoomHandler
