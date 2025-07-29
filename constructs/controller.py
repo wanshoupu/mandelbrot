@@ -63,10 +63,7 @@ class MandelbrotCtrl:
         self.handle.fig.canvas.draw_idle()
 
         new_data = data_gen(specs, regen=self.regen)
-        handle = mandelbrot_viz(new_data, self.handle)
-        # cbar is created new
-        self.handle.cbar = handle.cbar
-        self.handle.iterations = handle.iterations
+        mandelbrot_viz(new_data, self.handle)
 
         if self.history_handle is not None:
             self.history_handle.append(specs)
@@ -112,9 +109,7 @@ class MandelbrotCtrl:
         event.canvas.draw_idle()
 
         new_data = data_gen(specs, regen=self.regen)
-        handle = mandelbrot_viz(new_data, self.handle)
-        # cbar is created new
-        self.handle.cbar = handle.cbar
+        mandelbrot_viz(new_data, self.handle)
 
         if self.history_handle is not None:
             self.history_handle.append(specs)
@@ -129,11 +124,7 @@ class MandelbrotCtrl:
             return
         specs = PlotSpecs(*self.handle.ax.get_xlim() + self.handle.ax.get_ylim(), iterations)
         self.handle.data = data_gen(specs, regen=self.regen)
-
-        handle = mandelbrot_viz(handle=self.handle)
-
-        # cbar is created new
-        self.handle.cbar = handle.cbar
+        mandelbrot_viz(handle=self.handle)
 
         if self.history_handle is not None:
             self.history_handle.append(specs)

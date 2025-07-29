@@ -50,13 +50,10 @@ def mandelbrot_viz(mandelData: MandelbrotData = None, handle: PlotHandle = None)
     fig, ax, im = handle.fig, handle.ax, handle.im
     im.set_data(viz_data.img)
     im.set_extent(ax.get_xlim() + ax.get_ylim())
+    im.set_clim(vmin=0, vmax=15)
+    im.set_clim(vmin=viz_data.vmin, vmax=viz_data.vmax)
     fig.canvas.draw_idle()
 
-    # Remove the old colorbar
-    handle.cbar.remove()
-    # Add colorbar
-    handle.cbar = plt.colorbar(im, ax=ax, shrink=0.8, pad=0.03)
-    handle.cbar.set_label("Escape Time (Smoothed Iterations)")
     # plt.axis("off")
     # plt.savefig(f"{filename}.png", dpi=600, bbox_inches="tight", pad_inches=0)
     handle.data = mandelData

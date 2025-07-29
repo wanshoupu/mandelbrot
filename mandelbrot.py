@@ -10,7 +10,6 @@ from constructs.controller import MandelbrotCtrl
 
 def interactive_plot():
     specs = PlotSpecs(-2.8, 2.0, -1.5, 1.5)
-    # specs = PlotSpecs(-0.7513642549206841, -0.7513415106902602, -0.02865126476442289, -0.028637049620407924)
 
     data = data_gen(specs, regen=False)
     plot = mandelbrot_viz(data)
@@ -29,7 +28,7 @@ def fit_iter(rects):
 def static_plot(rects):
     for rect in rects:
         data = data_gen(rect, regen=True)
-        plot = mandelbrot_viz(data)
+        mandelbrot_viz(data)
         plt.show()
 
 
@@ -47,6 +46,8 @@ if __name__ == "__main__":
         # PlotSpecs(0.4368069999763344, 0.4398493614168821, -0.35852693900808164, -0.35662546310773924, 500),
         # PlotSpecs(-0.7461263814442011, -0.7453139017908547, -0.11031698787565258, -0.10980918809231052, 1886),
         # PlotSpecs(0.18473855923320498, 0.2653601272332049, 0.530657994708115, 0.5810464747081149, 558, 2560, 1600),
+        # specs = PlotSpecs(-0.7513642549206841, -0.7513415106902602, -0.02865126476442289, -0.028637049620407924),
+
     ]
     #
     # fit_iter(rects)

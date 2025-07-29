@@ -23,9 +23,7 @@ class HistoryCtrl:
         self.handle.fig.canvas.draw_idle()
 
         new_data = data_gen(specs, regen=self.regen)
-        handle = mandelbrot_viz(new_data, self.handle)
-        # cbar is created new
-        self.handle.cbar = handle.cbar
+        mandelbrot_viz(new_data, self.handle)
 
     def undo(self, event):
         if self.index > 0:
@@ -39,9 +37,7 @@ class HistoryCtrl:
             self.handle.fig.canvas.draw_idle()
 
             new_data = data_gen(specs, regen=self.regen)
-            handle = mandelbrot_viz(new_data, self.handle)
-            # cbar is created new
-            self.handle.cbar = handle.cbar
+            mandelbrot_viz(new_data, self.handle)
         else:
             print("Undo event ignored-history is empty.")
 
@@ -56,9 +52,7 @@ class HistoryCtrl:
             self.handle.fig.canvas.draw_idle()
 
             new_data = data_gen(specs, regen=self.regen)
-            handle = mandelbrot_viz(new_data, self.handle)
-            # cbar is created new
-            self.handle.cbar = handle.cbar
+            mandelbrot_viz(new_data, self.handle)
         else:
             print("Redo event ignored-already latest.")
 
