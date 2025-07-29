@@ -68,4 +68,5 @@ def mandelbrot_viz(mandelData: MandelbrotData = None, handle: PlotHandle = None)
     # plt.axis("off")
     # plt.savefig(f"{filename}.png", dpi=600, bbox_inches="tight", pad_inches=0)
     handle.data = mandelData
+    handle.iterations = viz_data.specs.iterations
     return handle

@@ -46,6 +46,7 @@ class MandelbrotCtrl:
         handle = mandelbrot_viz(new_data, self.handle)
         # cbar is created new
         self.handle.cbar = handle.cbar
+        self.handle.iterations = handle.iterations
 
         if self.history_handle is not None:
             self.history_handle.append(specs)
