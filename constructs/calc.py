@@ -1,4 +1,3 @@
-import os
 from dataclasses import astuple
 from multiprocessing import Pool
 
@@ -38,8 +37,7 @@ def data_gen(specs: PlotSpecs, regen=False) -> MandelbrotData:
     If Z is none, calculate the mandelbrot dataset ab initio
     Otherwise, calculate the mandelbrot dataset based on the given Z with additional iterations given by iterations_delta.
     """
-    filename = cache_manager.get_filename(specs)
-    if regen or not os.path.exists(filename):
+    if regen or not cache_manager.exists(specs):
         print(f"Generating data for:\n  PlotSpecs{astuple(specs)}")
         C = clingrid(specs)
         Z = np.zeros_like(C)
@@ -57,19 +55,5 @@ def data_gen(specs: PlotSpecs, regen=False) -> MandelbrotData:
         Z = np.vstack(Z_chunks)
         rect = np.array([specs.xmin, specs.xmax, specs.ymin, specs.ymax])
         dataset = MandelbrotData(diverging_order, mask_interior, rect, Z)
-        np.savez(filename, escapes=dataset.escapes, interior=dataset.interior, rect=np.array(astuple(specs)), Z=dataset.Z)
-    return data_load(filename)
-
-
-def data_load(filename: str) -> MandelbrotData:
-    mandelbrot = np.load(filename)
-    dataset = mandelbrot['escapes']
-    interior = mandelbrot['interior']
-    rect = np.array(mandelbrot['rect'])
-    Z_payload = mandelbrot['Z']
-    # Apply custom colormap for exterior
-    return MandelbrotData(dataset, interior, rect, Z_payload)
-
-
-def cache_cleanup():
-    cache_manager.cleanup()
+        cache_manager.commit(specs, dataset)
+    return cache_manager.get(specs)
