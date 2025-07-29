@@ -116,20 +116,3 @@ class MandelbrotCtrl:
 
         if self.history_handle is not None:
             self.history_handle.append(specs)
-
-
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-    import numpy as np
-    from matplotlib.widgets import TextBox, Button
-
-    fig, ax = plt.subplots()
-    data = np.random.rand(100, 100)
-    im = ax.imshow(data, cmap='viridis')
-    cbar = ax.figure.colorbar(im, ax=ax)
-    axbox = plt.axes((0.36, 0.92, 0.08, 0.03))  # [left, bottom, width, height]
-    iter_box = TextBox(axbox, 'Enter number:', initial='0')
-    handle = PlotHandle(fig, ax, im, cbar, Button(axbox, 'Undo'), Button(axbox, 'Undo'), Button(axbox, 'Undo'), iter_box=iter_box, iterations=10, data=data)
-    zh = MandelbrotCtrl(handle, .5)
-    plt.title("Scroll anywhere in plot")
-    plt.show()

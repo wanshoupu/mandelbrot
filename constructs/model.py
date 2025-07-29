@@ -50,6 +50,7 @@ class PlotHandle:
     data: MandelbrotData = None
 
     def update_iter_box(self, iterations):
+        self.iterations = iterations
         if self.iter_box is None:
             return
         box: TextBox = self.iter_box

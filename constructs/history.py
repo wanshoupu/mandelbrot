@@ -33,7 +33,6 @@ class HistoryCtrl:
 
     def undo(self, event):
         print(f"Undo event at index {self.index} (history length: {len(self.history)})")
-        print(self.history)
         if self.index > 0:
             self.index -= 1
             specs = self.history[self.index]
@@ -68,7 +67,6 @@ class HistoryCtrl:
             print("Redo click event ignored for future is empty.")
 
     def append(self, specs: PlotSpecs):
-        print(specs)
         while self.index < len(self.history) - 1:
             self.history.pop()
         self.history.append(specs)
