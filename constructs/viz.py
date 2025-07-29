@@ -50,7 +50,6 @@ def mandelbrot_viz(mandelData: MandelbrotData = None, handle: PlotHandle = None)
     fig, ax, im = handle.fig, handle.ax, handle.im
     im.set_data(viz_data.img)
     im.set_extent(ax.get_xlim() + ax.get_ylim())
-    im.set_clim(vmin=0, vmax=15)
     im.set_clim(vmin=viz_data.vmin, vmax=viz_data.vmax)
     fig.canvas.draw_idle()
 
