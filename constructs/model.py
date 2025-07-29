@@ -6,6 +6,9 @@ from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.widgets import Button, TextBox
 
 PIXEL_X, PIXEL_Y = 2560, 1600
+CMAP_EXT = LinearSegmentedColormap.from_list(
+    "electric", ["#000428", "#004e92", "#00d4ff", "#ffffff"], N=1024
+)
 
 
 @dataclass(frozen=True)
@@ -46,6 +49,15 @@ class PlotHandle:
     iterations: int
     data: MandelbrotData = None
 
+    def update_iter_box(self, iterations):
+        if self.iter_box is None:
+            return
+        box: TextBox = self.iter_box
+        eventson = box.eventson
+        box.eventson = False
+        box.set_val(str(iterations))
+        box.eventson = eventson
+
 
 @dataclass
 class PlotSpecs:
@@ -54,6 +66,7 @@ class PlotSpecs:
     ymin: float
     ymax: float
     iterations: int = None
+    # iterations_delta: int = None
     width: int = PIXEL_X
     height: int = PIXEL_Y
 
@@ -78,8 +91,3 @@ def iter_heuristic(rect):
     dy = rect.ymax - rect.ymin
     iterations = int(150 * np.log10(dx * dy) - 209 * np.log10(dx * dy) + 327)
     return min(iterations, 2048)
-
-
-CMAP_EXT = LinearSegmentedColormap.from_list(
-    "electric", ["#000428", "#004e92", "#00d4ff", "#ffffff"], N=1024
-)

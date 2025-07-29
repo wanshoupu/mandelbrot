@@ -33,7 +33,7 @@ def clingrid(rect):
     return C
 
 
-def data_gen(specs: PlotSpecs, regen=False, Z: np.array = None, iterations_delta: int = None) -> MandelbrotData:
+def data_gen(specs: PlotSpecs, regen=False) -> MandelbrotData:
     """
     If Z is none, calculate the mandelbrot dataset ab initio
     Otherwise, calculate the mandelbrot dataset based on the given Z with additional iterations given by iterations_delta.
@@ -42,12 +42,8 @@ def data_gen(specs: PlotSpecs, regen=False, Z: np.array = None, iterations_delta
     if regen or not os.path.exists(filename):
         print(f"Generating data for:\n  PlotSpecs{astuple(specs)}")
         C = clingrid(specs)
-        if Z is None:
-            Z = np.zeros_like(C)
-            iterations_delta = specs.iterations
-        else:
-            assert Z.shape == C.shape
-            assert iterations_delta is not None and iterations_delta > 0
+        Z = np.zeros_like(C)
+        iterations_delta = specs.iterations
 
         C_chunks = np.array_split(C, PARALLELISM, axis=0)
         Z_chunks = np.array_split(Z, PARALLELISM, axis=0)

@@ -1,15 +1,15 @@
 import threading
 
-from constructs.data import data_gen
-from constructs.history import HistoryHandler
+from constructs.calc import data_gen
+from constructs.history import HistoryCtrl
 from constructs.viz import mandelbrot_viz
 from constructs.model import PlotHandle, PlotSpecs
 
 DEBOUNCE_TIME = .1
 
 
-class ZoomHandler:
-    def __init__(self, plot_handle: PlotHandle, zoom_factor=0.5, history_handle: HistoryHandler = None, regen=False):
+class MandelbrotCtrl:
+    def __init__(self, plot_handle: PlotHandle, zoom_factor=0.5, history_handle: HistoryCtrl = None, regen=False):
         self.handle = plot_handle
         self.zoom_factor = zoom_factor
         self.cid = self.handle.fig.canvas.mpl_connect('button_press_event', self.on_click)
@@ -84,7 +84,8 @@ class ZoomHandler:
         new_width = (xlim[1] - xlim[0]) * scale_factor
         new_height = (ylim[1] - ylim[0]) * scale_factor
 
-        specs = PlotSpecs(xdata - new_width / 2, xdata + new_width / 2, ydata - new_height / 2, ydata + new_height / 2, self.handle.iterations)
+        specs = PlotSpecs(xdata - new_width / 2, xdata + new_width / 2, ydata - new_height / 2, ydata + new_height / 2)
+        self.handle.update_iter_box(specs.iterations)
         ax.set_xlim(specs.xmin, specs.xmax)
         ax.set_ylim(specs.ymin, specs.ymax)
         event.canvas.draw_idle()
@@ -102,18 +103,11 @@ class ZoomHandler:
             iterations = int(text)
             if iterations == self.handle.iterations:
                 return
-            iteration_delta = iterations - self.handle.iterations
         except ValueError:
             print(f'Invalid number: {text}')
             return
-        if iteration_delta < 0:
-            specs = PlotSpecs(*self.handle.ax.get_xlim() + self.handle.ax.get_ylim(), iterations)
-            self.handle.data = data_gen(specs, regen=self.regen)
-        else:
-            specs = PlotSpecs(*self.handle.ax.get_xlim() + self.handle.ax.get_ylim(), self.handle.iterations)
-            Z_init = self.handle.data.Z
-            self.handle.data = data_gen(specs, regen=self.regen, iterations_delta=iteration_delta, Z=Z_init)
-            self.handle.iterations += iteration_delta
+        specs = PlotSpecs(*self.handle.ax.get_xlim() + self.handle.ax.get_ylim(), iterations)
+        self.handle.data = data_gen(specs, regen=self.regen)
 
         handle = mandelbrot_viz(handle=self.handle)
 
@@ -136,6 +130,6 @@ if __name__ == "__main__":
     axbox = plt.axes((0.36, 0.92, 0.08, 0.03))  # [left, bottom, width, height]
     iter_box = TextBox(axbox, 'Enter number:', initial='0')
     handle = PlotHandle(fig, ax, im, cbar, Button(axbox, 'Undo'), Button(axbox, 'Undo'), Button(axbox, 'Undo'), iter_box=iter_box, iterations=10, data=data)
-    zh = ZoomHandler(handle, .5)
+    zh = MandelbrotCtrl(handle, .5)
     plt.title("Scroll anywhere in plot")
     plt.show()

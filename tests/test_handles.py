@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 from constructs.model import PlotHandle
-from constructs.zoomer import ZoomHandler
+from constructs.controller import MandelbrotCtrl
 
 matplotlib.use('Qt5Agg')  # or 'QtAgg'
 
@@ -19,7 +19,7 @@ def test_zoom_left_click(qtbot):
     im = ax.imshow(data, extent=extent, origin='lower', cmap='inferno')
     cbar = plt.colorbar(im, ax=ax, shrink=0.8, pad=0.03)
     handle = PlotHandle(fig, ax, im, cbar, None, None, None)
-    zoom_handler = ZoomHandler(handle, zoom_factor=0.8)
+    zoom_handler = MandelbrotCtrl(handle, zoom_factor=0.8)
 
     # Wrap canvas in QWidget for qtbot
     canvas = FigureCanvas(fig)
@@ -56,7 +56,7 @@ def test_zoom_right_click(qtbot):
     im = ax.imshow(data, extent=extent, origin='lower', cmap='inferno')
     cbar = plt.colorbar(im, ax=ax, shrink=0.8, pad=0.03)
     handle = PlotHandle(fig, ax, im, cbar, None, None, None)
-    zoom_handler = ZoomHandler(handle, zoom_factor=0.5)
+    zoom_handler = MandelbrotCtrl(handle, zoom_factor=0.5)
 
     # Wrap canvas in QWidget for qtbot
     canvas = FigureCanvas(fig)

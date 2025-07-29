@@ -1,9 +1,9 @@
-from constructs.data import data_gen
+from constructs.calc import data_gen
 from constructs.viz import mandelbrot_viz
 from constructs.model import PlotHandle, PlotSpecs
 
 
-class HistoryHandler:
+class HistoryCtrl:
     def __init__(self, handle: PlotHandle, regen=False):
         self.history = [PlotSpecs(*handle.ax.get_xlim(), *handle.ax.get_ylim(), iterations=handle.iterations)]
         self.index = 0
@@ -23,7 +23,7 @@ class HistoryHandler:
 
         self.handle.ax.set_xlim(specs.xmin, specs.xmax)
         self.handle.ax.set_ylim(specs.ymin, specs.ymax)
-        self.handle.iter_box.set_val(str(specs.iterations))
+        self.handle.update_iter_box(specs.iterations)
         self.handle.fig.canvas.draw_idle()
 
         new_data = data_gen(specs, regen=self.regen)
@@ -33,13 +33,14 @@ class HistoryHandler:
 
     def undo(self, event):
         print(f"Undo event at index {self.index} (history length: {len(self.history)})")
+        print(self.history)
         if self.index > 0:
             self.index -= 1
             specs = self.history[self.index]
             # Set new limits centered on click
             self.handle.ax.set_xlim(specs.xmin, specs.xmax)
             self.handle.ax.set_ylim(specs.ymin, specs.ymax)
-            self.handle.iter_box.set_val(str(specs.iterations))
+            self.handle.update_iter_box(specs.iterations)
             self.handle.fig.canvas.draw_idle()
 
             new_data = data_gen(specs, regen=self.regen)
@@ -56,7 +57,7 @@ class HistoryHandler:
             specs = self.history[self.index]
             self.handle.ax.set_xlim(specs.xmin, specs.xmax)
             self.handle.ax.set_ylim(specs.ymin, specs.ymax)
-            self.handle.iter_box.set_val(str(specs.iterations))
+            self.handle.update_iter_box(specs.iterations)
             self.handle.fig.canvas.draw_idle()
 
             new_data = data_gen(specs, regen=self.regen)
@@ -67,6 +68,7 @@ class HistoryHandler:
             print("Redo click event ignored for future is empty.")
 
     def append(self, specs: PlotSpecs):
+        print(specs)
         while self.index < len(self.history) - 1:
             self.history.pop()
         self.history.append(specs)

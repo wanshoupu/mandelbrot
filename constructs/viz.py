@@ -51,8 +51,9 @@ def mandelbrot_viz(mandelData: MandelbrotData = None, handle: PlotHandle = None)
         cbar = plt.colorbar(im, ax=ax, shrink=0.8, pad=0.03)
         cbar.set_label("Escape Time (Smoothed Iterations)")
         btn_undo, btn_reset, btn_redo, iter_box = static_buttons(fig)
-        iter_box.set_val(str(viz_data.specs.iterations))
-        return PlotHandle(fig, ax, im, cbar, btn_undo, btn_reset, btn_redo, iter_box, iterations=viz_data.specs.iterations, data=mandelData)
+        handle = PlotHandle(fig, ax, im, cbar, btn_undo, btn_reset, btn_redo, iter_box, iterations=viz_data.specs.iterations, data=mandelData)
+        handle.update_iter_box(viz_data.specs.iterations)
+        return handle
 
     fig, ax, im = handle.fig, handle.ax, handle.im
     im.set_data(viz_data.img)
