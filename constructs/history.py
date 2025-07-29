@@ -11,10 +11,6 @@ class HistoryCtrl:
         self.regen = regen
         self.init_specs = self.history[0]
 
-        self.handle.btn_undo.on_clicked(self.undo)
-        self.handle.btn_reset.on_clicked(self.reset)
-        self.handle.btn_redo.on_clicked(self.redo)
-
     def reset(self, event):
         print(f"Reset event")
         specs = self.init_specs

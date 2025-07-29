@@ -32,14 +32,6 @@ def mandelbrot_viz(mandelData: MandelbrotData = None, handle: PlotHandle = None)
         fig, ax = plt.subplots()
         fig.subplots_adjust(left=0, right=1, top=1, bottom=0)
 
-        # Define the key press event handler
-        def on_key(event):
-            if event.key == 'f':  # press 'f' to toggle fullscreen
-                fig.canvas.manager.full_screen_toggle()
-
-        # Connect the key press event
-        fig.canvas.mpl_connect('key_press_event', on_key)
-
         im = ax.imshow(
             viz_data.img,
             origin='lower',

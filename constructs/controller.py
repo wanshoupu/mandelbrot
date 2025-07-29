@@ -14,14 +14,34 @@ class MandelbrotCtrl:
         self.zoom_factor = zoom_factor
         self.cid = self.handle.fig.canvas.mpl_connect('button_press_event', self.on_click)
         self.sid = self.handle.fig.canvas.mpl_connect('scroll_event', self.on_scroll)
-        self.handle.iter_box.on_submit(self._on_iteration_change)
 
         self.history_handle = history_handle
+        self.handle.btn_undo.on_clicked(self.history_handle.undo)
+        self.handle.btn_reset.on_clicked(self.history_handle.reset)
+        self.handle.btn_redo.on_clicked(self.history_handle.redo)
+
+        # Connect the key press event
+        self.kid = self.handle.fig.canvas.mpl_connect('key_press_event', self.on_key)
+
+        self.handle.iter_box.on_submit(self._on_iteration_change)
+
         self.timer = None
         self.delay = 200  # milliseconds
         self.scroll_lock = threading.Lock()
         self.scroll_accumulator = 0
         self.regen = regen
+
+    # Define the key press event handler
+    def on_key(self, event):
+        # print(event.key, event.ctrl, event.shift, event.alt)
+        if event.key == 'f':  # press 'f' to toggle fullscreen
+            self.handle.fig.canvas.manager.full_screen_toggle()
+        elif event.key == 'cmd+z':
+            self.history_handle.undo(None)
+        elif event.key == 'cmd+Z':
+            self.history_handle.redo(None)
+        elif event.key == 'cmd+r':
+            self.history_handle.reset(None)
 
     def on_click(self, event):
         if event.inaxes != self.handle.ax or event.button != 1:
