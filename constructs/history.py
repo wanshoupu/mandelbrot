@@ -32,9 +32,9 @@ class HistoryCtrl:
         self.handle.cbar = handle.cbar
 
     def undo(self, event):
-        print(f"Undo event at index {self.index} (history length: {len(self.history)})")
         if self.index > 0:
             self.index -= 1
+            print(f"Undo event: use specs {self.index + 1}/{len(self.history)}")
             specs = self.history[self.index]
             # Set new limits centered on click
             self.handle.ax.set_xlim(specs.xmin, specs.xmax)
@@ -47,12 +47,12 @@ class HistoryCtrl:
             # cbar is created new
             self.handle.cbar = handle.cbar
         else:
-            print("Undo event ignored for history is empty.")
+            print("Undo event ignored-history is empty.")
 
     def redo(self, event):
-        print(f"Redo event at index {self.index} (history length: {len(self.history)})")
         if self.index < len(self.history) - 1:
             self.index += 1
+            print(f"Redo event: use specs {self.index + 1}/{len(self.history)}")
             specs = self.history[self.index]
             self.handle.ax.set_xlim(specs.xmin, specs.xmax)
             self.handle.ax.set_ylim(specs.ymin, specs.ymax)
@@ -64,7 +64,7 @@ class HistoryCtrl:
             # cbar is created new
             self.handle.cbar = handle.cbar
         else:
-            print("Redo click event ignored for future is empty.")
+            print("Redo event ignored-already latest.")
 
     def append(self, specs: PlotSpecs):
         while self.index < len(self.history) - 1:
