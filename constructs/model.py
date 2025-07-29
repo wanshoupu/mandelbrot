@@ -49,13 +49,13 @@ class PlotHandle:
     iterations: int
     data: MandelbrotData = None
 
-    def update_iter_box(self, iterations):
+    def update_iter_box(self, iterations, events_on=False):
         self.iterations = iterations
         if self.iter_box is None:
             return
         box: TextBox = self.iter_box
         eventson = box.eventson
-        box.eventson = False
+        box.eventson = events_on
         box.set_val(str(iterations))
         box.eventson = eventson
 
