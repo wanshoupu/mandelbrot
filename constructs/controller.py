@@ -1,15 +1,16 @@
 import threading
+from multiprocessing import Event
 
 from constructs.calc import data_gen
 from constructs.history import HistoryCtrl
-from constructs.viz import mandelbrot_viz
 from constructs.model import PlotHandle, PlotSpecs
+from constructs.viz import mandelbrot_viz
 
 DEBOUNCE_TIME = .1
 
 
 class MandelbrotCtrl:
-    def __init__(self, plot_handle: PlotHandle, zoom_factor=0.5, history_handle: HistoryCtrl = None, regen=False):
+    def __init__(self, plot_handle: PlotHandle, zoom_factor=0.5, history_handle: HistoryCtrl = None, regen=False, cancel_event: Event = None):
         self.handle = plot_handle
         self.zoom_factor = zoom_factor
         self.cid = self.handle.fig.canvas.mpl_connect('button_press_event', self.on_click)
@@ -30,6 +31,7 @@ class MandelbrotCtrl:
         self.scroll_lock = threading.Lock()
         self.scroll_accumulator = 0
         self.regen = regen
+        self.cancel_event: Event = cancel_event
 
     # Define the key press event handler
     def on_key(self, event):
@@ -42,11 +44,15 @@ class MandelbrotCtrl:
             self.history_handle.redo(None)
         elif event.key == 'cmd+r':
             self.history_handle.reset(None)
+        elif event.key == 'cmd+c' or event.key == 'ctrl+c':
+            if self.cancel_event is not None:
+                self.cancel_event.set()
 
     def on_click(self, event):
         if event.inaxes != self.handle.ax or event.button != 1:
             return  # Only respond to left-clicks inside the plot
-
+        if self.cancel_event is not None:
+            self.cancel_event.clear()
         x, y = event.xdata, event.ydata
         print(f"Recentering at: ({x:.3f}, {y:.3f})")
 
@@ -62,7 +68,7 @@ class MandelbrotCtrl:
         self.handle.ax.set_ylim(specs.ymin, specs.ymax)
         self.handle.fig.canvas.draw_idle()
 
-        new_data = data_gen(specs, regen=self.regen)
+        new_data = data_gen(specs, regen=self.regen, cancel_event=self.cancel_event)
         mandelbrot_viz(new_data, self.handle)
 
         if self.history_handle is not None:
@@ -90,6 +96,9 @@ class MandelbrotCtrl:
         if not steps:
             return
 
+        if self.cancel_event is not None:
+            self.cancel_event.clear()
+
         scale_factor = self.zoom_factor ** steps
 
         ax = event.inaxes
@@ -108,7 +117,7 @@ class MandelbrotCtrl:
         ax.set_ylim(specs.ymin, specs.ymax)
         event.canvas.draw_idle()
 
-        new_data = data_gen(specs, regen=self.regen)
+        new_data = data_gen(specs, regen=self.regen, cancel_event=self.cancel_event)
         mandelbrot_viz(new_data, self.handle)
 
         if self.history_handle is not None:
@@ -122,9 +131,13 @@ class MandelbrotCtrl:
         except ValueError:
             print(f'Invalid number: {text}')
             return
+
+        if self.cancel_event is not None:
+            self.cancel_event.clear()
+
         specs = PlotSpecs(*self.handle.ax.get_xlim() + self.handle.ax.get_ylim(), iterations)
-        self.handle.data = data_gen(specs, regen=self.regen)
-        mandelbrot_viz(handle=self.handle)
+        data = data_gen(specs, regen=self.regen, cancel_event=self.cancel_event)
+        mandelbrot_viz(data, handle=self.handle)
 
         if self.history_handle is not None:
             self.history_handle.append(specs)

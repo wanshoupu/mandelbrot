@@ -21,7 +21,7 @@ def test_zoom_left_click(qtbot):
     cbar = ax.figure.colorbar(im, ax=ax)
     axbox = plt.axes((0.36, 0.92, 0.08, 0.03))  # [left, bottom, width, height]
     iter_box = TextBox(axbox, 'Enter number:', initial='0')
-    handle = PlotHandle(fig, ax, im, cbar, Button(axbox, 'Undo'), Button(axbox, 'Undo'), Button(axbox, 'Undo'), iter_box=iter_box, iterations=10, data=MandelbrotData(data, data, extent))
+    handle = PlotHandle(fig, ax, im, cbar, Button(axbox, 'Undo'), Button(axbox, 'Undo'), Button(axbox, 'Undo'), iter_box=iter_box, iterations=10)
     zoom_handler = MandelbrotCtrl(handle, zoom_factor=0.8)
 
     # Wrap canvas in QWidget for qtbot

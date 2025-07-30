@@ -1,18 +1,22 @@
+from multiprocessing import Event
+
 from constructs.calc import data_gen
 from constructs.viz import mandelbrot_viz
 from constructs.model import PlotHandle, PlotSpecs
 
 
 class HistoryCtrl:
-    def __init__(self, handle: PlotHandle, regen=False):
+    def __init__(self, handle: PlotHandle, cancel_event: Event = None):
         self.history = [PlotSpecs(*handle.ax.get_xlim(), *handle.ax.get_ylim(), iterations=handle.iterations)]
         self.index = 0
         self.handle = handle
-        self.regen = regen
         self.init_specs = self.history[0]
+        self.cancel_event = cancel_event
 
     def reset(self, event):
         print(f"Reset event")
+        if self.cancel_event is not None:
+            self.cancel_event.set()
         specs = self.init_specs
         self.history = [specs]
         self.index = 0
@@ -22,11 +26,13 @@ class HistoryCtrl:
         self.handle.update_iter_box(specs.iterations)
         self.handle.fig.canvas.draw_idle()
 
-        new_data = data_gen(specs, regen=self.regen)
+        new_data = data_gen(specs)
         mandelbrot_viz(new_data, self.handle)
 
     def undo(self, event):
         if self.index > 0:
+            if self.cancel_event is not None:
+                self.cancel_event.set()
             self.index -= 1
             print(f"Undo event: use specs {self.index + 1}/{len(self.history)}")
             specs = self.history[self.index]
@@ -36,13 +42,15 @@ class HistoryCtrl:
             self.handle.update_iter_box(specs.iterations)
             self.handle.fig.canvas.draw_idle()
 
-            new_data = data_gen(specs, regen=self.regen)
+            new_data = data_gen(specs)
             mandelbrot_viz(new_data, self.handle)
         else:
             print("Undo event ignored-history is empty.")
 
     def redo(self, event):
         if self.index < len(self.history) - 1:
+            if self.cancel_event is not None:
+                self.cancel_event.set()
             self.index += 1
             print(f"Redo event: use specs {self.index + 1}/{len(self.history)}")
             specs = self.history[self.index]
@@ -51,7 +59,7 @@ class HistoryCtrl:
             self.handle.update_iter_box(specs.iterations)
             self.handle.fig.canvas.draw_idle()
 
-            new_data = data_gen(specs, regen=self.regen)
+            new_data = data_gen(specs)
             mandelbrot_viz(new_data, self.handle)
         else:
             print("Redo event ignored-already latest.")

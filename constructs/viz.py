@@ -26,7 +26,7 @@ def static_buttons(fig):
 def mandelbrot_viz(mandelData: MandelbrotData = None, handle: PlotHandle = None) -> PlotHandle:
     assert mandelData is not None or handle is not None
     if mandelData is None:
-        mandelData = handle.data
+        return handle
     viz_data = mandelData.to_viz_data()
     if handle is None:
         fig, ax = plt.subplots()
@@ -43,7 +43,7 @@ def mandelbrot_viz(mandelData: MandelbrotData = None, handle: PlotHandle = None)
         cbar = plt.colorbar(im, ax=ax, shrink=0.8, pad=0.03)
         cbar.set_label("Escape Time (Smoothed Iterations)")
         btn_undo, btn_reset, btn_redo, iter_box = static_buttons(fig)
-        handle = PlotHandle(fig, ax, im, cbar, btn_undo, btn_reset, btn_redo, iter_box, iterations=viz_data.specs.iterations, data=mandelData)
+        handle = PlotHandle(fig, ax, im, cbar, btn_undo, btn_reset, btn_redo, iter_box, iterations=viz_data.specs.iterations)
         handle.update_iter_box(viz_data.specs.iterations)
         return handle
 
@@ -55,6 +55,5 @@ def mandelbrot_viz(mandelData: MandelbrotData = None, handle: PlotHandle = None)
 
     # plt.axis("off")
     # plt.savefig(f"{filename}.png", dpi=600, bbox_inches="tight", pad_inches=0)
-    handle.data = mandelData
     handle.iterations = viz_data.specs.iterations
     return handle

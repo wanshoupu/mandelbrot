@@ -69,7 +69,6 @@ class PlotHandle:
     btn_redo: Button
     iter_box: TextBox
     iterations: int
-    data: MandelbrotData = None
 
     def update_iter_box(self, iterations, events_on=False):
         self.iterations = iterations

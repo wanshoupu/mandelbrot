@@ -1,6 +1,6 @@
 from dataclasses import astuple
 from decimal import Decimal
-from multiprocessing import Pool
+from multiprocessing import Pool, Event
 
 import numpy as np
 
@@ -15,11 +15,12 @@ complex_type = np.longcomplex
 ATOL = 1e-16
 
 
-def mandelbrot_calc_dcomplex(C: np.array, iterations, Z: np.array):
+def mandelbrot_calc_dcomplex(C: np.array, iterations, Z: np.array, cancel_event: Event):
     mask_interior = np.full(C.shape, True, dtype=bool)  # mask for interior points
     diverging_order = np.zeros(C.shape)  # the number of iterations it takes to reach diverging point (> 2)
     for i in range(iterations):
-        print(i)
+        if cancel_event is not None and cancel_event.is_set():
+            break
         Z[mask_interior] = dcomplex_add(dcomplex_sq(Z[mask_interior]), C[mask_interior])
         norm = dcomplex_abs(Z)
         diverged = norm > 2
@@ -29,10 +30,12 @@ def mandelbrot_calc_dcomplex(C: np.array, iterations, Z: np.array):
     return diverging_order, mask_interior
 
 
-def mandelbrot_calc(C: np.array, iterations, Z: np.array):
+def mandelbrot_calc(C: np.array, iterations, Z: np.array, cancel_event: Event):
     mask_interior = np.full(C.shape, True, dtype=bool)  # mask for interior points
     diverging_order = np.zeros(C.shape)  # the number of iterations it takes to reach diverging point (> THRESHOLD)
     for i in range(iterations):
+        if cancel_event is not None and cancel_event.is_set():
+            break
         Z[mask_interior] = Z[mask_interior] ** 2 + C[mask_interior]
         norm = np.abs(Z)
         diverged = norm > THRESHOLD
@@ -49,19 +52,21 @@ def clingrid(specs: PlotSpecs):
     return C
 
 
-def data_gen(specs: PlotSpecs, regen=False) -> MandelbrotData:
+def data_gen(specs: PlotSpecs, regen=False, cancel_event: Event = None) -> MandelbrotData:
     """
     If Z is none, calculate the mandelbrot dataset ab initio
     Otherwise, calculate the mandelbrot dataset based on the given Z with additional iterations given by iterations_delta.
     """
     if regen or not cache_manager.exists(specs):
         print(f"Generating data for:\n  PlotSpecs{astuple(specs)}")
-        dataset = data_regen(specs)
+        dataset = data_regen(specs, cancel_event)
+        if cancel_event is not None and cancel_event.is_set():
+            return None
         cache_manager.commit(specs, dataset)
     return cache_manager.get(specs)
 
 
-def data_regen(specs):
+def data_regen(specs, cancel_event: Event):
     precision = min(specs.xmax - specs.xmin, specs.ymax - specs.ymin)
     use_dcomplex = np.isclose(precision, 0, atol=ATOL)
 
@@ -77,10 +82,11 @@ def data_regen(specs):
     C_chunks = np.array_split(C, PARALLELISM, axis=0)
     Z_chunks = np.array_split(Z, PARALLELISM, axis=0)
     with Pool(processes=CPU_CORES) as pool:
-        results = pool.starmap(mandelbrot_calc_dcomplex if use_dcomplex else mandelbrot_calc, [(c, iterations_delta, z) for c, z in zip(C_chunks, Z_chunks)])
-        pool.terminate()
-    # Merge back along rows
-    diverging_order_chunks, mask_interior_chunks, Z_chunks = zip(*results)
+        results = pool.starmap_async(mandelbrot_calc_dcomplex if use_dcomplex else mandelbrot_calc, [(c, iterations_delta, z, cancel_event) for c, z in zip(C_chunks, Z_chunks)])
+        # Merge back along rows
+        diverging_order_chunks, mask_interior_chunks, Z_chunks = zip(*results.get())
+    if cancel_event is not None and cancel_event.is_set():
+        return None
     diverging_order = np.vstack(diverging_order_chunks)
     mask_interior = np.vstack(mask_interior_chunks)
     Z = np.vstack(Z_chunks)
