@@ -47,17 +47,3 @@ def dcomplex_sq(a: np.ndarray) -> np.ndarray:
 
 def dcomplex_abs(a: np.ndarray) -> np.ndarray:
     return np.vectorize(abs, otypes=[object])(a)
-
-
-def dclingrid(rect, width, height):
-    xmin, xmax, ymin, ymax = Decimal(rect.xmin), Decimal(rect.xmax), Decimal(rect.ymin), Decimal(rect.ymax)
-    # Generate Decimal ranges
-    x = [xmin + (xmax - xmin) * Decimal(i) / Decimal(width - 1) for i in range(width)]
-    y = [ymin + (ymax - ymin) * Decimal(j) / Decimal(height - 1) for j in range(height)]
-
-    # Create 2D array of DComplex
-    C = np.empty((height, width), dtype=object)
-    for j in range(height):
-        for i in range(width):
-            C[j, i] = DComplex(real=x[i], imag=y[j])
-    return C
