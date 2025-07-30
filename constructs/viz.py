@@ -23,10 +23,7 @@ def static_buttons(fig):
     return btn_undo, btn_reset, btn_redo, iter_box
 
 
-def mandelbrot_viz(mandelData: MandelbrotData = None, handle: PlotHandle = None) -> PlotHandle:
-    assert mandelData is not None or handle is not None
-    if mandelData is None:
-        return handle
+def mandelbrot_viz(mandelData: MandelbrotData, handle: PlotHandle = None) -> PlotHandle:
     viz_data = mandelData.to_viz_data()
     if handle is None:
         fig, ax = plt.subplots()

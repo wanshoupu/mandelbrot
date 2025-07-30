@@ -7,6 +7,7 @@ from constructs.model import PlotHandle, PlotSpecs
 from constructs.viz import mandelbrot_viz
 
 DEBOUNCE_TIME = .1
+MIN_ZOOM_LEVEL = 1e-14
 
 
 class MandelbrotCtrl:
@@ -69,10 +70,10 @@ class MandelbrotCtrl:
         self.handle.fig.canvas.draw_idle()
 
         new_data = data_gen(specs, regen=self.regen, cancel_event=self.cancel_event)
-        mandelbrot_viz(new_data, self.handle)
-
-        if self.history_handle is not None:
-            self.history_handle.append(specs)
+        if new_data is not None:
+            mandelbrot_viz(new_data, self.handle)
+            if self.history_handle is not None:
+                self.history_handle.append(specs)
 
     def on_scroll(self, event):
         if event.inaxes != self.handle.ax:
@@ -99,8 +100,6 @@ class MandelbrotCtrl:
         if self.cancel_event is not None:
             self.cancel_event.clear()
 
-        scale_factor = self.zoom_factor ** steps
-
         ax = event.inaxes
         xlim = ax.get_xlim()
         ylim = ax.get_ylim()
@@ -108,8 +107,12 @@ class MandelbrotCtrl:
         xdata = event.xdata
         ydata = event.ydata
 
+        scale_factor = self.zoom_factor ** steps
         new_width = (xlim[1] - xlim[0]) * scale_factor
         new_height = (ylim[1] - ylim[0]) * scale_factor
+        if min(new_width, new_height) < MIN_ZOOM_LEVEL:
+            print(f'Zoom level is already the lowest {MIN_ZOOM_LEVEL:.3f}')
+            return
 
         specs = PlotSpecs(xdata - new_width / 2, xdata + new_width / 2, ydata - new_height / 2, ydata + new_height / 2)
         self.handle.update_iter_box(specs.iterations)
@@ -118,10 +121,10 @@ class MandelbrotCtrl:
         event.canvas.draw_idle()
 
         new_data = data_gen(specs, regen=self.regen, cancel_event=self.cancel_event)
-        mandelbrot_viz(new_data, self.handle)
-
-        if self.history_handle is not None:
-            self.history_handle.append(specs)
+        if new_data is not None:
+            mandelbrot_viz(new_data, self.handle)
+            if self.history_handle is not None:
+                self.history_handle.append(specs)
 
     def _on_iteration_change(self, text):
         try:
@@ -136,8 +139,8 @@ class MandelbrotCtrl:
             self.cancel_event.clear()
 
         specs = PlotSpecs(*self.handle.ax.get_xlim() + self.handle.ax.get_ylim(), iterations)
-        data = data_gen(specs, regen=self.regen, cancel_event=self.cancel_event)
-        mandelbrot_viz(data, handle=self.handle)
-
-        if self.history_handle is not None:
-            self.history_handle.append(specs)
+        new_data = data_gen(specs, regen=self.regen, cancel_event=self.cancel_event)
+        if new_data is not None:
+            mandelbrot_viz(new_data, handle=self.handle)
+            if self.history_handle is not None:
+                self.history_handle.append(specs)

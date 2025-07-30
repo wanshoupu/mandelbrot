@@ -27,7 +27,7 @@ def mandelbrot_calc_dcomplex(C: np.array, iterations, Z: np.array, cancel_event:
         mask = diverged & mask_interior
         diverging_order[mask] = i + 1 - np.log(np.log2(np.array(norm[mask], dtype=np.float64)))
         mask_interior[mask] = False
-    return diverging_order, mask_interior
+    return diverging_order, mask_interior, Z
 
 
 def mandelbrot_calc(C: np.array, iterations, Z: np.array, cancel_event: Event):
@@ -60,7 +60,7 @@ def data_gen(specs: PlotSpecs, regen=False, cancel_event: Event = None) -> Mande
     if regen or not cache_manager.exists(specs):
         print(f"Generating data for:\n  PlotSpecs{astuple(specs)}")
         dataset = data_regen(specs, cancel_event)
-        if cancel_event is not None and cancel_event.is_set():
+        if dataset is None:
             return None
         cache_manager.commit(specs, dataset)
     return cache_manager.get(specs)
