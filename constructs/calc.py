@@ -74,20 +74,20 @@ def data_regen(specs, cancel_event: Event):
     closest_dataset = cache_manager.get_closest(specs)
     if closest_dataset is None:
         Z = dcomplex_zeroes(C.shape) if use_dcomplex else np.zeros_like(C, dtype=complex_type)
-        iterations_delta = specs.iterations
+        iterations_payload = 0
     else:
         Z = closest_dataset.Z
-        iterations_delta = specs.iterations - closest_dataset.to_specs().iterations
-
+        iterations_payload = closest_dataset.to_specs().iterations
     C_chunks = np.array_split(C, PARALLELISM, axis=0)
     Z_chunks = np.array_split(Z, PARALLELISM, axis=0)
     with Pool(processes=CPU_CORES) as pool:
-        results = pool.starmap_async(mandelbrot_calc_dcomplex if use_dcomplex else mandelbrot_calc, [(c, iterations_delta, z, cancel_event) for c, z in zip(C_chunks, Z_chunks)])
+        results = pool.starmap_async(mandelbrot_calc_dcomplex if use_dcomplex else mandelbrot_calc,
+                                     [(c, (specs.iterations - iterations_payload), z, cancel_event) for c, z in zip(C_chunks, Z_chunks)])
         # Merge back along rows
         diverging_order_chunks, mask_interior_chunks, Z_chunks = zip(*results.get())
     if cancel_event is not None and cancel_event.is_set():
         return None
-    diverging_order = np.vstack(diverging_order_chunks)
+    diverging_order = np.vstack(diverging_order_chunks) + iterations_payload
     mask_interior = np.vstack(mask_interior_chunks)
     Z = np.vstack(Z_chunks)
     dataset = MandelbrotData(diverging_order, mask_interior, np.array(astuple(specs)), Z)

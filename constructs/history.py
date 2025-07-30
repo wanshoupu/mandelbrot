@@ -18,8 +18,6 @@ class HistoryCtrl:
         if self.cancel_event is not None:
             self.cancel_event.set()
         specs = self.init_specs
-        self.history = [specs]
-        self.index = 0
 
         self.handle.ax.set_xlim(specs.xmin, specs.xmax)
         self.handle.ax.set_ylim(specs.ymin, specs.ymax)
@@ -28,6 +26,7 @@ class HistoryCtrl:
 
         new_data = data_gen(specs)
         mandelbrot_viz(new_data, self.handle)
+        self.append(specs)
 
     def undo(self, event):
         if self.index > 0:
