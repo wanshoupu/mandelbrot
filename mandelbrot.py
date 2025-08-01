@@ -22,6 +22,23 @@ def interactive_plot(cancel_event: Event = None):
     plt.show()
 
 
+def iterative_plot(cancel_event: Event = None):
+    specs = PlotSpecs(-1.40117680024729, -1.4011388931965836, -1.3275389990109983e-05, 1.0416516701498089e-05, 1000, 2560, 1600)
+    plt.tight_layout(pad=0.1)
+    plt.ion()
+    data = data_gen(specs, regen=False)
+    plot = mandelbrot_viz(data)
+    zoom_handler = MandelbrotCtrl(plot, zoom_factor=.6, regen=False, cancel_event=cancel_event)
+    plt.show()
+    delta = 200
+    for iteration in range(specs.iterations, 7000, delta):
+        print(f'iteration {iteration}')
+        plot.iter_box.set_val(str(iteration))
+        plt.pause(0.05)
+    plt.ioff()
+    plt.show()  # this won't create a new figure — just holds the existing one open
+
+
 def fit_iter(rects):
     for rect in sorted(rects, key=lambda rect: rect.iterations):
         cit = iter_heuristic(rect)
@@ -52,12 +69,13 @@ if __name__ == "__main__":
             # PlotSpecs(0.18473855923320498, 0.2653601272332049, 0.530657994708115, 0.5810464747081149, 558, 2560, 1600),
             # PlotSpecs(-0.7513642549206841, -0.7513415106902602, -0.02865126476442289, -0.028637049620407924),
             PlotSpecs(-0.7377199751668726, -0.737719975166842, 0.1279205257140878, 0.12792052571410706, 1933, 2560, 1600),
-            PlotSpecs(-0.11425136232090372, -0.11425136202154029, -0.9689025540456517, -0.9689025538585496, 10000, 2560, 1600), # complex number overflow
+            PlotSpecs(-0.11425136232090372, -0.11425136202154029, -0.9689025540456517, -0.9689025538585496, 10000, 2560, 1600),  # complex number overflow
         ]
 
         try:
             # fit_iter(rects)
             # static_plot(rects)
-            interactive_plot(manager.Event())
+            # interactive_plot(manager.Event())
+            iterative_plot(manager.Event())
         finally:
             cache_cleanup()

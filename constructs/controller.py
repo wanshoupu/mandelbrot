@@ -18,9 +18,10 @@ class MandelbrotCtrl:
         self.sid = self.handle.fig.canvas.mpl_connect('scroll_event', self.on_scroll)
 
         self.history_handle = history_handle
-        self.handle.btn_undo.on_clicked(self.history_handle.undo)
-        self.handle.btn_reset.on_clicked(self.history_handle.reset)
-        self.handle.btn_redo.on_clicked(self.history_handle.redo)
+        if self.history_handle is not None:
+            self.handle.btn_undo.on_clicked(self.history_handle.undo)
+            self.handle.btn_reset.on_clicked(self.history_handle.reset)
+            self.handle.btn_redo.on_clicked(self.history_handle.redo)
 
         # Connect the key press event
         self.kid = self.handle.fig.canvas.mpl_connect('key_press_event', self.on_key)
