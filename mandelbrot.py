@@ -1,6 +1,7 @@
 from multiprocessing import Manager, Event
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 from constructs.calc import data_gen
 from constructs.cache import cache_cleanup
@@ -24,19 +25,25 @@ def interactive_plot(cancel_event: Event = None):
 
 def iterative_plot(cancel_event: Event = None):
     specs = PlotSpecs(-1.40117680024729, -1.4011388931965836, -1.3275389990109983e-05, 1.0416516701498089e-05, 1000, 2560, 1600)
-    plt.tight_layout(pad=0.1)
     plt.ion()
+    # plt.tight_layout(pad=0.1)
     data = data_gen(specs, regen=False)
     plot = mandelbrot_viz(data)
     zoom_handler = MandelbrotCtrl(plot, zoom_factor=.6, regen=False, cancel_event=cancel_event)
     plt.show()
-    delta = 200
-    for iteration in range(specs.iterations, 7000, delta):
+    plt.pause(0.05)
+    steps = 12
+    iterations = [int(a) for a in np.linspace(specs.iterations, 3000, steps)]
+    for iteration in iterations[1:]:
         print(f'iteration {iteration}')
         plot.iter_box.set_val(str(iteration))
         plt.pause(0.05)
+    specs.iterations = iterations[-1]
+    data = data_gen(specs, regen=False)
+    zmin, zmax = np.min(data.Z), np.max(data.Z)
+
     plt.ioff()
-    plt.show()  # this won't create a new figure — just holds the existing one open
+    plt.show()
 
 
 def fit_iter(rects):
@@ -78,4 +85,5 @@ if __name__ == "__main__":
             # interactive_plot(manager.Event())
             iterative_plot(manager.Event())
         finally:
-            cache_cleanup()
+            # cache_cleanup()
+            pass
