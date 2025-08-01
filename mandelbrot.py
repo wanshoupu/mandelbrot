@@ -26,9 +26,9 @@ def interactive_plot(cancel_event: Event = None):
 def iterative_plot(cancel_event: Event = None):
     specs = PlotSpecs(-1.40117680024729, -1.4011388931965836, -1.3275389990109983e-05, 1.0416516701498089e-05, 1000, 2560, 1600)
     plt.ion()
-    # plt.tight_layout(pad=0.1)
     data = data_gen(specs, regen=False)
     plot = mandelbrot_viz(data)
+    plot.fig.tight_layout(pad=0.1)
     zoom_handler = MandelbrotCtrl(plot, zoom_factor=.6, regen=False, cancel_event=cancel_event)
     plt.show()
     plt.pause(0.05)
