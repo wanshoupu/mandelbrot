@@ -82,8 +82,8 @@ if __name__ == "__main__":
         try:
             # fit_iter(rects)
             # static_plot(rects)
-            # interactive_plot(manager.Event())
-            iterative_plot(manager.Event())
+            interactive_plot(manager.Event())
+            # iterative_plot(manager.Event())
         finally:
             # cache_cleanup()
             pass
