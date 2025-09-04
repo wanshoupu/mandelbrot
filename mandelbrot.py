@@ -85,5 +85,4 @@ if __name__ == "__main__":
             interactive_plot(manager.Event())
             # iterative_plot(manager.Event())
         finally:
-            # cache_cleanup()
-            pass
+            cache_cleanup()
